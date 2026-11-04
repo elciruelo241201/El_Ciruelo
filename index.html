@@ -290,7 +290,9 @@ button.secondary{
         <div class="chips" id="cobroChips">
           <div class="chip sel" data-v="Normal">💵 Cobro normal</div>
           <div class="chip" data-v="Cortesia">🤝 Cortesía</div>
+          <div class="chip" data-v="SinSello">🚫 Sin sello</div>
         </div>
+        <div class="hint" id="sinSelloHint" style="display:none;">🚫 Se cobra normal, pero este lavado <b>no suma sello</b> ni se guarda como cliente de la promo.</div>
         <div id="cortesiaBox" style="display:none;">
           <label>Motivo de la cortesía *</label>
           <div class="chips" id="motivoChips">
@@ -525,7 +527,7 @@ button.secondary{
         <div><label>Forma de pago</label><select id="ajPago"><option>Efectivo</option><option>Tarjeta</option></select></div>
       </div>
       <label>Sello / Canje</label>
-      <select id="ajSello"><option value=""></option><option value="Sello">Sello</option><option value="Canje">Canje</option><option value="Cortesía">Cortesía</option></select>
+      <select id="ajSello"><option value=""></option><option value="Sello">Sello</option><option value="Canje">Canje</option><option value="Cortesía">Cortesía</option><option value="Sin sello">Sin sello</option></select>
       <label>Comentarios</label>
       <input id="ajComentarios" type="text">
       <button class="primary" onclick="guardarAjuste()">Guardar cambios</button>
@@ -762,14 +764,14 @@ function demoPost(action, payload){
       "Forma de pago": payload.formaPago, "Tipo (Sello/Canje)": payload.tipoSelloCanje || "", "Foto (link)": payload.foto || "", "Comentarios": payload.comentario || ""
     });
     demoSave("registro", all);
-    if(payload.placa){
+    if(payload.placa && payload.tipoSelloCanje!=="Sin sello"){
       const clientes = demoStore("clientes", []);
       let c = clientes.find(c=>c.placa===payload.placa);
       if(!c){ c = {placa:payload.placa, nombre:payload.nombre, celular:payload.celular, tipo:(payload.categoria==="Lavada"?payload.tipoVehiculo:""), tamano:(payload.categoria==="Lavada"?payload.tamano:""), visitas:0, promo:"No", dias:0, avisar:"No"}; clientes.push(c); }
       // La promo de 6ta lavada SOLO se acumula con el Paq.#1 Básico.
       if(payload.categoria==="Lavada" && payload.servicio==="Paq.#1 Básico"){
         if(payload.tipoSelloCanje==="Canje") c.visitas = Math.max(0,(c.visitas||0)-SELLOS_PROMO); // conserva los sellos de más
-        else if(payload.tipoSelloCanje!=="Cortesía") c.visitas = (c.visitas||0)+1;
+        else if(payload.tipoSelloCanje!=="Cortesía" && payload.tipoSelloCanje!=="Sin sello") c.visitas = (c.visitas||0)+1;
         c.promo = c.visitas>=SELLOS_PROMO ? (c.tipo==="Moto"?"🎁 50%":"🎁 Gratis") : "No";
       }
       demoSave("clientes", clientes);
@@ -812,7 +814,7 @@ function demoPost(action, payload){
       if(r["Categoría"]==="Lavada"){ c.tipo = c.tipo||r["Tipo vehículo"]; c.tamano = c.tamano||r["Tamaño"]; }
       if(r["Categoría"]==="Lavada" && r["Paquete / Servicio"]==="Paq.#1 Básico"){
         if(r["Tipo (Sello/Canje)"]==="Canje") c.visitas = Math.max(0,c.visitas-SELLOS_PROMO);
-        else if(r["Tipo (Sello/Canje)"]!=="Cortesía") c.visitas++;
+        else if(r["Tipo (Sello/Canje)"]!=="Cortesía" && r["Tipo (Sello/Canje)"]!=="Sin sello") c.visitas++;
       }
     });
     const clientes = Object.values(porPlaca).map(c=>Object.assign(c,{promo:c.visitas>=SELLOS_PROMO?(c.tipo==="Moto"?"🎁 50%":"🎁 Gratis"):"No", dias:0, avisar:"No"}));
@@ -1014,7 +1016,7 @@ async function loadHoy(){
     if(x["Tipo (Sello/Canje)"]==="Cortesía"){
       return `<div class="list-row neu-row"><span>${horaDe(it.t)} · 🤝 Cortesía · ${x["Placa"]||"s/placa"} · ${x["Paquete / Servicio"]||""}${x["Nombre"]?" · "+x["Nombre"]:""}${extra}</span><span>$0</span></div>`;
     }
-    const etiqCanje = x["Tipo (Sello/Canje)"]==="Canje" ? "🎁 Canje · " : "";
+    const etiqCanje = x["Tipo (Sello/Canje)"]==="Canje" ? "🎁 Canje · " : (x["Tipo (Sello/Canje)"]==="Sin sello" ? "🚫 Sin sello · " : "");
     return `<div class="list-row pos-row"><span>${horaDe(it.t)} · ${etiqCanje}${x["Placa"]||"s/placa"} · ${x["Paquete / Servicio"]||""}${extra}</span><span>+${money(x["Monto cobrado"])}</span></div>`;
   }).join("") : '<div class="empty">Aún no hay registros hoy.</div>';
 
@@ -1090,7 +1092,7 @@ async function aplicarVehiculoCliente(c){
 function updateSelloVisibility(){
   const cat = chipVal("catChips");
   const esBasico = cat==="Lavada" && document.getElementById("selPaquete").value === "basico";
-  document.getElementById("selloBox").style.display = (esBasico && !esCortesia()) ? "block" : "none";
+  document.getElementById("selloBox").style.display = (esBasico && !esCortesia() && !esSinSello()) ? "block" : "none";
   if(cat==="Lavada" && !esBasico){
     document.getElementById("selloHint").textContent = "Este paquete no acumula sello para la promo (solo el Paq.#1 Básico cuenta).";
   } else if(esBasico){
@@ -1195,13 +1197,15 @@ async function fillCeraTamano(){
 document.getElementById("selCeraTamano").addEventListener("change", recalcMonto);
 
 /* ---- cortesías (lavado sin cobro: trabajadores / familiares) ---- */
-function esCanje(){ return chipVal("catChips")==="Lavada" && document.getElementById("selPaquete").value==="basico" && !esCortesia() && chipVal("selloChips")==="Canje"; }
+function esCanje(){ return chipVal("catChips")==="Lavada" && document.getElementById("selPaquete").value==="basico" && !esCortesia() && !esSinSello() && chipVal("selloChips")==="Canje"; }
+function esSinSello(){ return chipVal("catChips")==="Lavada" && chipVal("cobroChips")==="SinSello"; }
 function esCortesia(){ return chipVal("catChips")==="Lavada" && chipVal("cobroChips")==="Cortesia"; }
 setupChips("cobroChips", ()=>{ aplicarCortesia(); });
 setupChips("motivoChips", ()=>{});
 function aplicarCortesia(){
   const c = esCortesia();
   document.getElementById("cortesiaBox").style.display = c ? "block" : "none";
+  document.getElementById("sinSelloHint").style.display = esSinSello() ? "block" : "none";
   document.getElementById("extrasWrap").style.display = c ? "none" : "block";
   if(c) document.querySelector('#extraChips .chip[data-v="No"]').click(); // sin extras dentro de la cortesía
   updateSelloVisibility();
@@ -1454,7 +1458,7 @@ async function guardarRegistro(){
   const montoLavado = Number(monto) - sumExtras; // el total cobrado se reparte: lavado + extras
 
   const esBasico = categoria==="Lavada" && document.getElementById("selPaquete").value === "basico";
-  let tipoSelloCanje = esCort ? "Cortesía" : (esBasico ? chipVal("selloChips") : "");
+  let tipoSelloCanje = esCort ? "Cortesía" : (esSinSello() ? "Sin sello" : (esBasico ? chipVal("selloChips") : ""));
   if(tipoSelloCanje === "Canje"){
     const visitas = currentCliente ? (Number(currentCliente.visitas)||0) : 0;
     if(visitas < SELLOS_PROMO){
