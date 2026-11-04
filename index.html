@@ -542,6 +542,8 @@ button.secondary{
 const LOGO_SRC = document.querySelector(".logo-badge img").src;
 const LS_KEY = "elciruelo_api_url";
 // Pega aquí la URL de tu Apps Script (termina en /exec) para que TODOS los celulares abran ya conectados.
+/* Promoción: 5 lavadas Paq.#1 Básico acumuladas y la 6ta es gratis (50% en moto) */
+const SELLOS_PROMO = 5;
 const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbwGyLfd15BpO6fZQyvtd4WgvY5rRPczCwU4-uOmXe8iSpHmBsZbyGHMP35CB_LyUENQ5Q/exec";
 let API_URL = localStorage.getItem(LS_KEY) || DEFAULT_API_URL;
 let ONLINE = !!API_URL;
@@ -764,9 +766,9 @@ function demoPost(action, payload){
       if(!c){ c = {placa:payload.placa, nombre:payload.nombre, celular:payload.celular, tipo:payload.tipoVehiculo, visitas:0, promo:"No", dias:0, avisar:"No"}; clientes.push(c); }
       // La promo de 6ta lavada SOLO se acumula con el Paq.#1 Básico.
       if(payload.categoria==="Lavada" && payload.servicio==="Paq.#1 Básico"){
-        if(payload.tipoSelloCanje==="Canje") c.visitas = Math.max(0,(c.visitas||0)-6); // conserva los sellos de más
+        if(payload.tipoSelloCanje==="Canje") c.visitas = Math.max(0,(c.visitas||0)-SELLOS_PROMO); // conserva los sellos de más
         else if(payload.tipoSelloCanje!=="Cortesía") c.visitas = (c.visitas||0)+1;
-        c.promo = c.visitas>=6 ? (c.tipo==="Moto"?"🎁 50%":"🎁 Gratis") : "No";
+        c.promo = c.visitas>=SELLOS_PROMO ? (c.tipo==="Moto"?"🎁 50%":"🎁 Gratis") : "No";
       }
       demoSave("clientes", clientes);
     }
@@ -806,11 +808,11 @@ function demoPost(action, payload){
       const c = porPlaca[r["Placa"]] || (porPlaca[r["Placa"]] = {placa:r["Placa"], visitas:0});
       c.nombre = r["Nombre"]||c.nombre; c.celular = r["Celular"]||c.celular; c.tipo = r["Tipo vehículo"]||c.tipo;
       if(r["Categoría"]==="Lavada" && r["Paquete / Servicio"]==="Paq.#1 Básico"){
-        if(r["Tipo (Sello/Canje)"]==="Canje") c.visitas = Math.max(0,c.visitas-6);
+        if(r["Tipo (Sello/Canje)"]==="Canje") c.visitas = Math.max(0,c.visitas-SELLOS_PROMO);
         else if(r["Tipo (Sello/Canje)"]!=="Cortesía") c.visitas++;
       }
     });
-    const clientes = Object.values(porPlaca).map(c=>Object.assign(c,{promo:c.visitas>=6?(c.tipo==="Moto"?"🎁 50%":"🎁 Gratis"):"No", dias:0, avisar:"No"}));
+    const clientes = Object.values(porPlaca).map(c=>Object.assign(c,{promo:c.visitas>=SELLOS_PROMO?(c.tipo==="Moto"?"🎁 50%":"🎁 Gratis"):"No", dias:0, avisar:"No"}));
     demoSave("clientes", clientes);
     return {ok:true};
   }
@@ -1056,13 +1058,13 @@ function updateSelloVisibility(){
   }
 }
 
-/* candado del "Canje de promo": solo se habilita si la placa ya cumplió las 6 visitas */
+/* candado del "Canje de promo": solo se habilita si la placa ya juntó los 5 sellos (la 6ta es gratis) */
 function esFinDeSemana(d){ const w=(d||new Date()).getDay(); return w===0 || w===6; }
 function updateCanjeLock(){
   const chipCanje = document.querySelector('#selloChips .chip[data-v="Canje"]');
   if(!chipCanje) return;
   const visitas = currentCliente ? (Number(currentCliente.visitas)||0) : 0;
-  const elegible = visitas >= 6 && !esFinDeSemana(); // el canje no aplica sábados ni domingos
+  const elegible = visitas >= SELLOS_PROMO && !esFinDeSemana(); // el canje no aplica sábados ni domingos
   chipCanje.classList.toggle("locked", !elegible);
   if(!elegible && chipCanje.classList.contains("sel")){
     chipCanje.classList.remove("sel");
@@ -1266,15 +1268,15 @@ function mostrarSellosPlaca(c, placa){
   box.style.display = "flex";
   if(!c){
     box.className = "placa-sellos nuevo";
-    box.innerHTML = "🆕 Cliente nuevo · 0 de 6 sellos";
+    box.innerHTML = "🆕 Cliente nuevo · 0 de 5 sellos";
     return;
   }
   const v = Number(c.visitas)||0;
   let st = "";
   for(let i=1;i<=5;i++) st += `<div class="stamp ${i<=v?'filled':''}">${i<=v?`<img class="stamp-logo" src="${LOGO_SRC}">`:''}</div>`;
-  st += `<div class="stamp ${v>=6?'gift':''}">🎁</div>`;
-  box.className = "placa-sellos" + (v>=6 ? " lista" : "");
-  box.innerHTML = `<span>${c.nombre ? c.nombre+" · " : ""}${v>=6 ? v+" sellos · ¡Promo lista! 🎁"+(esFinDeSemana()?" Se canjea de lunes a viernes — hoy suma sello normal.":"") : v+" de 6 sellos"}</span><div class="mini-stamps">${st}</div>`;
+  st += `<div class="stamp ${v>=SELLOS_PROMO?'gift':''}">🎁</div>`;
+  box.className = "placa-sellos" + (v>=SELLOS_PROMO ? " lista" : "");
+  box.innerHTML = `<span>${c.nombre ? c.nombre+" · " : ""}${v>=SELLOS_PROMO ? v+" sellos · ¡Esta es su 6ta, va gratis! 🎁"+(esFinDeSemana()?" Se canjea de lunes a viernes — hoy suma sello normal.":"") : v+" de 5 sellos"}</span><div class="mini-stamps">${st}</div>`;
 }
 async function checkPlacaSellos(){
   const placa = document.getElementById("inPlaca").value.trim();
@@ -1292,7 +1294,7 @@ async function checkPlacaSellos(){
     document.getElementById("inNombre").value = document.getElementById("inNombre").value || c.nombre || "";
     document.getElementById("inCelular").value = document.getElementById("inCelular").value || c.celular || "";
     const visitas = Number(c.visitas)||0;
-    hint.textContent = `${c.nombre || "Cliente"} lleva ${visitas}${visitas>=6?"":" de 6"} sellos.` + (visitas>=6 ? (esFinDeSemana() ? " Ya tiene promo 🎁, pero el canje solo es de lunes a viernes: hoy se registra como sello normal." : " ¡Ya le toca su promo! 🎁") : "");
+    hint.textContent = `${c.nombre || "Cliente"} lleva ${visitas}${visitas>=SELLOS_PROMO?"":" de 5"} sellos.` + (visitas>=SELLOS_PROMO ? (esFinDeSemana() ? " Ya tiene sus 5 sellos 🎁, pero el canje solo es de lunes a viernes: hoy se registra como sello normal." : " ¡Esta es su 6ta lavada: va gratis! 🎁") : "");
   } else {
     hint.textContent = "Cliente nuevo — este será su primer sello.";
   }
@@ -1392,8 +1394,8 @@ async function guardarRegistro(){
   let tipoSelloCanje = esCort ? "Cortesía" : (esBasico ? chipVal("selloChips") : "");
   if(tipoSelloCanje === "Canje"){
     const visitas = currentCliente ? (Number(currentCliente.visitas)||0) : 0;
-    if(visitas < 6){
-      showToast("Esta placa aún no completa las 6 visitas — no se puede canjear la promo.");
+    if(visitas < SELLOS_PROMO){
+      showToast("Esta placa aún no junta 5 sellos — no se puede canjear la promo.");
       return;
     }
     if(esFinDeSemana()){
@@ -1464,7 +1466,7 @@ async function buscarCliente(){
   const visitas = Number(c.visitas)||0;
   let stamps = "";
   for(let i=1;i<=6;i++){
-    if(i===6) stamps += `<div class="stamp ${visitas>=6?'gift':''}">🎁</div>`;
+    if(i===6) stamps += `<div class="stamp ${visitas>=SELLOS_PROMO?'gift':''}">🎁</div>`;
     else stamps += `<div class="stamp ${i<=visitas?'filled':''}">${i<=visitas?`<img class="stamp-logo" src="${LOGO_SRC}">`:''}</div>`;
   }
   box.innerHTML = `
@@ -1473,7 +1475,7 @@ async function buscarCliente(){
       <div class="client-plate">${c.placa}</div>
       <div class="stamps">${stamps}</div>
       <div style="text-align:center;font-weight:800;color:var(--agua-dark);font-size:13px;">
-        ${visitas>=6 ? "🎉 ¡Promo lista!" + (visitas>6 ? ` (+${visitas-6} sello${visitas-6>1?"s":""} para la siguiente)` : "") + " · canje de lunes a viernes" : visitas + " de 6 sellos"}
+        ${visitas>=SELLOS_PROMO ? "🎉 ¡Su 6ta va gratis!" + (visitas>SELLOS_PROMO ? ` (+${visitas-SELLOS_PROMO} sello${visitas-SELLOS_PROMO>1?"s":""} para la siguiente)` : "") + " · canje de lunes a viernes" : visitas + " de 5 sellos"}
       </div>
     </div>`;
 }
@@ -1627,7 +1629,7 @@ async function guardarAjuste(){
   if(sello==="Canje" && ajusteActual["Tipo (Sello/Canje)"]!=="Canje"){
     const data = await apiGet("clientes");
     const c = (data.clientes||[]).find(k=>String(k.placa).toUpperCase()===placa);
-    if(!c || (Number(c.visitas)||0) < 6){ showToast("Esa placa aún no completa las 6 visitas — no se puede canjear"); return; }
+    if(!c || (Number(c.visitas)||0) < SELLOS_PROMO){ showToast("Esa placa aún no junta 5 sellos — no se puede canjear"); return; }
     if(esFinDeSemana(new Date(ajusteActual["Fecha y hora"]))){ showToast("El canje no aplica sábados ni domingos"); return; }
   }
   const campos = {
