@@ -569,18 +569,36 @@ async function apiGet(action, params){
     return demoGet(action, params);
   }
 }
+const _sleep = ms => new Promise(r => setTimeout(r, ms));
+async function _resultado(rid){
+  try{
+    const r = await fetch(API_URL + "?action=resultado&rid=" + encodeURIComponent(rid));
+    const j = await r.json();
+    return j && j.found ? j.result : null;
+  }catch(e){ return null; }
+}
 async function apiPost(action, payload){
   if(!ONLINE) return demoPost(action, payload);
+  const rid = Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+  const body = JSON.stringify({action, payload, rid});
+  // 1) envío normal
   try{
-    const res = await fetch(API_URL, {
-      method:"POST",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body: JSON.stringify({action, payload})
-    });
+    const res = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body});
     return await res.json();
-  }catch(e){
-    showToast("No se pudo guardar. Revisa tu internet.");
-    return {error:String(e)};
+  }catch(e1){
+    // 2) Safari/iPhone a veces corta la respuesta aunque el servidor sí recibió el envío.
+    //    Se revisa si ya quedó guardado y, si no, se reenvía sin leer respuesta (el servidor evita duplicados).
+    let r = await _resultado(rid);
+    if(r) return r;
+    try{ await fetch(API_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain;charset=utf-8"}, body}); }
+    catch(e2){ showToast("No se pudo guardar. Revisa tu internet."); return {error:String(e2)}; }
+    for(let i=0;i<30;i++){
+      await _sleep(1000);
+      r = await _resultado(rid);
+      if(r) return r;
+    }
+    showToast("No se pudo confirmar el guardado. Revisa tu internet.");
+    return {error:"sin confirmación del servidor"};
   }
 }
 
@@ -1390,6 +1408,7 @@ async function guardarRegistro(){
       showToast("Guardando foto…");
       const fr = await apiPost("uploadFoto", {dataUrl: fotoDataUrl, filename: `registro_${placa||"na"}_${Date.now()}.jpg`});
       if(fr && fr.url) fotoLink = fr.url;
+      else { showToast("No se pudo subir la foto. Intenta de nuevo."); return; }
     } else {
       fotoLink = fotoDataUrl; // modo local: se guarda la foto misma en este dispositivo
     }
