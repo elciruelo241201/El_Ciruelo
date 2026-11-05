@@ -232,6 +232,7 @@ button.secondary{
       <div class="grid2">
         <div class="stat"><div class="num" id="hAutos">—</div><div class="lab">Coche / camioneta</div></div>
         <div class="stat"><div class="num" id="hMotos">—</div><div class="lab">Moto</div></div>
+        <div class="stat"><div class="num" id="hBicis">—</div><div class="lab">Bici</div></div>
       </div>
     </div>
     <div class="card">
@@ -281,6 +282,7 @@ button.secondary{
           <div class="chip sel" data-v="Coche">Coche</div>
           <div class="chip" data-v="Camioneta">Camioneta</div>
           <div class="chip" data-v="Moto">Moto</div>
+          <div class="chip" data-v="Bici">🚲 Bici</div>
         </div>
         <label>Tamaño *</label>
         <select id="selTamano"></select>
@@ -616,6 +618,7 @@ const DEMO = {
       {categoria:"Moto", tamano:"Moto", express:"—", basico:60},
       {categoria:"Moto", tamano:"Taxi", express:"—", basico:90},
       {categoria:"Moto", tamano:"4 pasajeros", express:"—", basico:100},
+      {categoria:"Bici", tamano:"Bici", express:"—", basico:20},
       {categoria:"Coche", tamano:"Chico", express:75, basico:110},
       {categoria:"Coche", tamano:"Mediano", express:80, basico:120},
       {categoria:"Coche", tamano:"Grande", express:85, basico:130},
@@ -628,6 +631,7 @@ const DEMO = {
       {categoria:"Moto", tamano:"Moto", ceraLiquida:"—", ceraCrema:"—"},
       {categoria:"Moto", tamano:"Taxi", ceraLiquida:"—", ceraCrema:"—"},
       {categoria:"Moto", tamano:"4 pasajeros", ceraLiquida:"—", ceraCrema:"—"},
+      {categoria:"Bici", tamano:"Bici", ceraLiquida:"—", ceraCrema:40},
       {categoria:"Coche", tamano:"Chico", ceraLiquida:50, ceraCrema:90},
       {categoria:"Coche", tamano:"Mediano", ceraLiquida:60, ceraCrema:110},
       {categoria:"Coche", tamano:"Grande", ceraLiquida:70, ceraCrema:130},
@@ -702,12 +706,12 @@ function demoGet(action, params){
   if(action==="resumen"){
     const reg = demoGet("registro", params).registro;
     const gastos = demoStore("gastos", []);
-    const out = {ingresosEfectivo:0, ingresosTarjeta:0, gastosTotal:0, gastosOtros:0, sueldosTotal:0, cortesias:0, valorCortesias:0, lavadasAuto:0, lavadasMoto:0, cambiosAceite:0, limpiezaCadena:0, extras:0, canjes:0};
+    const out = {ingresosEfectivo:0, ingresosTarjeta:0, gastosTotal:0, gastosOtros:0, sueldosTotal:0, cortesias:0, valorCortesias:0, lavadasAuto:0, lavadasMoto:0, lavadasBici:0, cambiosAceite:0, limpiezaCadena:0, extras:0, canjes:0};
     reg.forEach(r=>{
       const m = Number(r["Monto cobrado"])||0;
       if(r["Forma de pago"]==="Efectivo") out.ingresosEfectivo+=m;
       if(r["Forma de pago"]==="Tarjeta") out.ingresosTarjeta+=m;
-      if(r["Categoría"]==="Lavada"){ if(r["Tipo vehículo"]==="Moto") out.lavadasMoto++; else out.lavadasAuto++; }
+      if(r["Categoría"]==="Lavada"){ if(r["Tipo vehículo"]==="Moto") out.lavadasMoto++; else if(r["Tipo vehículo"]==="Bici") out.lavadasBici++; else out.lavadasAuto++; }
       if(r["Categoría"]==="Extra") out.extras++;
       if(r["Paquete / Servicio"]==="Cambio de aceite") out.cambiosAceite++;
       if(r["Paquete / Servicio"]==="Limpieza y lubricación de cadena") out.limpiezaCadena++;
@@ -980,12 +984,13 @@ async function loadHoy(){
   document.getElementById("hGastosLab").textContent = esAdm ? "Gastos (incl. sueldos)" : "Gastos (sueldos del día)";
   document.getElementById("hUtilidad").textContent = money(utilVis);
   document.getElementById("hUtilidadBox").classList.toggle("neg", utilVis < 0);
-  document.getElementById("hServicios").textContent = (r.lavadasAuto+r.lavadasMoto+r.extras+r.cambiosAceite+r.limpiezaCadena) || 0;
+  document.getElementById("hServicios").textContent = (r.lavadasAuto+r.lavadasMoto+(r.lavadasBici||0)+r.extras+r.cambiosAceite+r.limpiezaCadena) || 0;
   const hc = document.getElementById("hCortesias");
   if(esAdm && r.cortesias){ hc.style.display="block"; hc.textContent = `🤝 Cortesías hoy: ${r.cortesias} (valor normal ${money(r.valorCortesias)}, no cuenta en ingresos)`; }
   else hc.style.display="none";
   document.getElementById("hAutos").textContent = r.lavadasAuto || 0;
   document.getElementById("hMotos").textContent = r.lavadasMoto || 0;
+  document.getElementById("hBicis").textContent = r.lavadasBici || 0;
 
   const [rg, a, pers] = await Promise.all([
     apiGet("registro", {desde:today, hasta:today}),
@@ -1068,7 +1073,7 @@ function setVehLock(on, lockTam){
 async function aplicarVehiculoCliente(c){
   setVehLock(false);
   if(!c) return;
-  const tipos = ["Coche","Camioneta","Moto"];
+  const tipos = ["Coche","Camioneta","Moto","Bici"];
   const tipo = String(c.tipo||"").trim();
   if(!tipos.includes(tipo)) return;
   if(chipVal("catChips")==="Lavada"){
@@ -1081,7 +1086,7 @@ async function aplicarVehiculoCliente(c){
   if(tam && [...selT.options].some(o=>o.value===tam)){
     selT.value = tam; await fillPaquete(); tamOk = true;
   }
-  if(tipo!=="Moto"){
+  if(tipo!=="Moto" && tipo!=="Bici"){
     document.querySelectorAll("#ceraTipoChips .chip").forEach(x=>x.classList.toggle("sel", x.dataset.v===tipo));
     await fillCeraTamano();
     const selC = document.getElementById("selCeraTamano");
@@ -1234,20 +1239,21 @@ async function renderExtras(){
   if(cera && cera.ceraLiquida !== "—") opts.push({nombre:"Cera Líquida", precio:Number(cera.ceraLiquida)});
   if(cera && cera.ceraCrema !== "—") opts.push({nombre:"Cera en Crema", precio:Number(cera.ceraCrema)});
   (cat.otros||[]).forEach(o=>{
+    if(tipo==="Bici") return; // la bici solo tiene Paq.#1 Básico y Cera en crema
     const esMoto = SERV_MOTO.includes(o.servicio);
     if(esMoto && tipo!=="Moto") return;
     opts.push({nombre:o.servicio, precio:Number(o.precio)});
   });
   const prevVar = document.getElementById("extraVarCom") ? {c:document.getElementById("extraVarCom").value, p:document.getElementById("extraVarPrecio").value} : {c:"",p:""};
   let html = opts.map(o=>`<div class="extra-row"><input type="checkbox" data-nombre="${o.nombre}" data-precio="${o.precio}" ${previos[o.nombre]?"checked":""}><span class="nom">${o.nombre}</span><span class="pr">${money(o.precio)}</span></div>`).join("");
-  html += `<div class="extra-row"><input type="checkbox" data-nombre="Variado" data-variado="1" ${previos["Variado"]?"checked":""}><span class="nom">✏️ Variado / Abierto</span><span class="pr">precio libre</span></div>
+  if(tipo!=="Bici") html += `<div class="extra-row"><input type="checkbox" data-nombre="Variado" data-variado="1" ${previos["Variado"]?"checked":""}><span class="nom">✏️ Variado / Abierto</span><span class="pr">precio libre</span></div>
     <div class="extra-var" id="extraVarBox" style="display:${previos["Variado"]?"block":"none"};"><input id="extraVarCom" type="text" placeholder="Describe el servicio (obligatorio)" value="${prevVar.c.replace(/"/g,"&quot;")}"><input id="extraVarPrecio" type="number" inputmode="decimal" placeholder="Precio cobrado" value="${prevVar.p}"></div>`;
   document.getElementById("extrasLista").innerHTML = html;
   document.querySelectorAll("#extrasLista input[type=checkbox]").forEach(cb=>cb.addEventListener("change", ()=>{
     if(cb.dataset.variado) document.getElementById("extraVarBox").style.display = cb.checked ? "block" : "none";
     recalcMonto();
   }));
-  document.getElementById("extraVarPrecio").addEventListener("input", recalcMonto);
+  const evp = document.getElementById("extraVarPrecio"); if(evp) evp.addEventListener("input", recalcMonto);
   recalcMonto();
 }
 function extrasSeleccionados(){
