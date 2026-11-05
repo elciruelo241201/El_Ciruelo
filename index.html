@@ -290,9 +290,7 @@ button.secondary{
         <div class="chips" id="cobroChips">
           <div class="chip sel" data-v="Normal">💵 Cobro normal</div>
           <div class="chip" data-v="Cortesia">🤝 Cortesía</div>
-          <div class="chip" data-v="SinSello">🚫 Sin sello</div>
         </div>
-        <div class="hint" id="sinSelloHint" style="display:none;">🚫 Se cobra normal, pero este lavado <b>no suma sello</b> ni se guarda como cliente de la promo.</div>
         <div id="cortesiaBox" style="display:none;">
           <label>Motivo de la cortesía *</label>
           <div class="chips" id="motivoChips">
@@ -336,10 +334,12 @@ button.secondary{
       <div id="selloBox" style="display:none;">
         <label>Sello</label>
         <div class="chips" id="selloChips">
-          <div class="chip sel" data-v="Sello">Sello normal</div>
+          <div class="chip sel" data-v="Sello">Sello</div>
           <div class="chip" data-v="Canje">🎁 Canje de promo</div>
+          <div class="chip" data-v="SinSello">🚫 Sin sello</div>
         </div>
         <div class="hint" id="selloHint"></div>
+        <div class="hint" id="sinSelloHint" style="display:none;">🚫 Se cobra normal, pero este lavado <b>no suma sello</b> ni se guarda como cliente de la promo.</div>
       </div>
 
       <label id="lblFoto">Foto de evidencia *</label>
@@ -426,6 +426,7 @@ button.secondary{
       </div>
       <div id="histCharts">
         <div class="card"><h3>💵 Ingresos vs gastos</h3><div class="hint" id="histSub1"></div><div class="legend" id="leg1"></div><div id="ch1" class="chart"></div></div>
+        <div class="card"><h3>🧾 Detalle de gastos</h3><div class="hint">Lo que registras con "+ Guardar gasto" en el periodo elegido (los sueldos van aparte, por asistencia).</div><div id="histGastos"></div></div>
         <div class="card"><h3>📊 Utilidad</h3><div class="hint">Verde = ganancia · Rojo = pérdida</div><div id="ch2" class="chart"></div><div id="histExtremos" class="hint" style="margin-top:6px;"></div></div>
         <div class="card"><h3>⚖️ Contra el periodo anterior</h3><div class="hint" id="histSub3"></div><div class="legend" id="leg3"></div><div id="ch3" class="chart"></div></div>
         <div class="card"><h3>🧽 Servicios realizados</h3><div class="legend" id="leg4"></div><div id="ch4" class="chart"></div></div>
@@ -1045,7 +1046,7 @@ setupChips("catChips", (v)=>{
 });
 setupChips("tipoChips", ()=>{ fillTamano(); recalcMonto(); });
 setupChips("pagoChips", ()=>{});
-setupChips("selloChips", ()=>{ recalcMonto(); });
+setupChips("selloChips", ()=>{ actualizarSinSelloHint(); recalcMonto(); });
 
 document.getElementById("selTamano").addEventListener("change", recalcMonto);
 document.getElementById("selPaquete").addEventListener("change", ()=>{ recalcMonto(); updateSelloVisibility(); });
@@ -1092,7 +1093,8 @@ async function aplicarVehiculoCliente(c){
 function updateSelloVisibility(){
   const cat = chipVal("catChips");
   const esBasico = cat==="Lavada" && document.getElementById("selPaquete").value === "basico";
-  document.getElementById("selloBox").style.display = (esBasico && !esCortesia() && !esSinSello()) ? "block" : "none";
+  document.getElementById("selloBox").style.display = (esBasico && !esCortesia()) ? "block" : "none";
+  actualizarSinSelloHint();
   if(cat==="Lavada" && !esBasico){
     document.getElementById("selloHint").textContent = "Este paquete no acumula sello para la promo (solo el Paq.#1 Básico cuenta).";
   } else if(esBasico){
@@ -1198,14 +1200,14 @@ document.getElementById("selCeraTamano").addEventListener("change", recalcMonto)
 
 /* ---- cortesías (lavado sin cobro: trabajadores / familiares) ---- */
 function esCanje(){ return chipVal("catChips")==="Lavada" && document.getElementById("selPaquete").value==="basico" && !esCortesia() && !esSinSello() && chipVal("selloChips")==="Canje"; }
-function esSinSello(){ return chipVal("catChips")==="Lavada" && chipVal("cobroChips")==="SinSello"; }
+function esSinSello(){ return chipVal("catChips")==="Lavada" && document.getElementById("selPaquete").value==="basico" && !esCortesia() && chipVal("selloChips")==="SinSello"; }
+function actualizarSinSelloHint(){ document.getElementById("sinSelloHint").style.display = esSinSello() ? "block" : "none"; }
 function esCortesia(){ return chipVal("catChips")==="Lavada" && chipVal("cobroChips")==="Cortesia"; }
 setupChips("cobroChips", ()=>{ aplicarCortesia(); });
 setupChips("motivoChips", ()=>{});
 function aplicarCortesia(){
   const c = esCortesia();
   document.getElementById("cortesiaBox").style.display = c ? "block" : "none";
-  document.getElementById("sinSelloHint").style.display = esSinSello() ? "block" : "none";
   document.getElementById("extrasWrap").style.display = c ? "none" : "block";
   if(c) document.querySelector('#extraChips .chip[data-v="No"]').click(); // sin extras dentro de la cortesía
   updateSelloVisibility();
@@ -1458,7 +1460,7 @@ async function guardarRegistro(){
   const montoLavado = Number(monto) - sumExtras; // el total cobrado se reparte: lavado + extras
 
   const esBasico = categoria==="Lavada" && document.getElementById("selPaquete").value === "basico";
-  let tipoSelloCanje = esCort ? "Cortesía" : (esSinSello() ? "Sin sello" : (esBasico ? chipVal("selloChips") : ""));
+  let tipoSelloCanje = esCort ? "Cortesía" : (esBasico ? (chipVal("selloChips")==="SinSello" ? "Sin sello" : chipVal("selloChips")) : "");
   if(tipoSelloCanje === "Canje"){
     const visitas = currentCliente ? (Number(currentCliente.visitas)||0) : 0;
     if(visitas < SELLOS_PROMO){
@@ -1504,6 +1506,7 @@ async function guardarRegistro(){
   showToast(extras.length ? `¡Registrado con ${extras.length} extra${extras.length>1?"s":""}! 💧` : "¡Registrado! 💧");
   document.querySelector('#extraChips .chip[data-v="No"]').click(); // reinicia la pregunta de extras
   document.querySelector('#cobroChips .chip[data-v="Normal"]').click(); // vuelve a cobro normal
+  document.querySelector('#selloChips .chip[data-v="Sello"]').click(); // vuelve a Sello
   placaVehAplicada=""; setVehLock(false); autoNombre=""; autoCel="";
   document.getElementById("inPlaca").value=""; document.getElementById("inNombre").value="";
   document.getElementById("inCelular").value=""; document.getElementById("selloHint").textContent="";
@@ -1826,9 +1829,10 @@ async function loadHistoricos(){
   if(r.error){ txt.textContent=r.error; charts.style.display="none"; kp.innerHTML=""; return; }
   charts.style.display="block";
   charts.style.opacity = ".5";
-  const [A, P] = await Promise.all([
+  const [A, P, G] = await Promise.all([
     apiGet("historico", {desde:isoDate(r.a), hasta:isoDate(r.b)}),
-    apiGet("historico", {desde:isoDate(r.pa), hasta:isoDate(r.pb)})
+    apiGet("historico", {desde:isoDate(r.pa), hasta:isoDate(r.pb)}),
+    apiGet("gastos", {desde:isoDate(r.a), hasta:isoDate(r.b)})
   ]);
   charts.style.opacity = "1";
   const dias = A.dias||[], prev = P.dias||[];
@@ -1849,6 +1853,7 @@ async function loadHistoricos(){
     <div class="kpi gas"><div class="n">${money(T.gastos)}</div><div class="l">Gastos</div>${delta(T.gastos,Tp.gastos,false)}</div>
     <div class="kpi ${T.utilidad<0?"ut-neg":"ut-pos"}"><div class="n">${money(T.utilidad)}</div><div class="l">Utilidad</div>${delta(T.utilidad,Tp.utilidad,true)}</div>`;
 
+  renderDetalleGastos((G && G.gastos) || []);
   const B = buckets(dias);
   const por = dias.length>14 ? "por semana" : "por día";
   document.getElementById("histSub1").textContent = `Lo que entró y lo que salió, ${por}`;
@@ -1879,6 +1884,24 @@ async function loadHistoricos(){
   document.getElementById("histTabla").innerHTML = `<table class="hist"><tr><th>${dias.length>14?"Semana":"Día"}</th><th>Ingresos</th><th>Gastos</th><th>Utilidad</th><th>Lavadas</th><th>Extras</th></tr>` +
     B.map(b=>{ const i=sum(b.dias,"ingresos"), g=sum(b.dias,"gastos"); return `<tr><td>${b.label}</td><td style="color:${C_ING}">${money(i)}</td><td style="color:${C_GAS}">${money(g)}</td><td style="color:${i-g<0?C_GAS:C_ING}">${money(i-g)}</td><td>${sum(b.dias,"lavadas")}</td><td>${sum(b.dias,"extras")}</td></tr>`; }).join("") +
     `<tr><td><b>Total</b></td><td><b>${money(T.ingresos)}</b></td><td><b>${money(T.gastos)}</b></td><td><b>${money(T.utilidad)}</b></td><td><b>${T.lavadas}</b></td><td><b>${T.extras}</b></td></tr></table>`;
+}
+const escH = s => String(s==null?"":s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function renderDetalleGastos(lista){
+  const box = document.getElementById("histGastos");
+  if(!lista.length){ box.innerHTML = '<div class="empty">No hay gastos registrados en este periodo.</div>'; return; }
+  const gs = lista.map(g=>({f:new Date(g["Fecha"]), c:String(g["Concepto"]||"").trim(), m:Number(g["Monto"])||0}))
+                  .sort((a,b)=>b.f-a.f);
+  const total = gs.reduce((t,g)=>t+g.m,0);
+  const por = {};
+  gs.forEach(g=>{ const k = (g.c||"Sin concepto").toLowerCase(); (por[k] = por[k] || {n:g.c||"Sin concepto", m:0, q:0}); por[k].m += g.m; por[k].q++; });
+  const resumen = Object.values(por).sort((a,b)=>b.m-a.m);
+  const fecha = f => isNaN(f) ? "" : `${DIAS_S[f.getDay()]} ${f.getDate()}/${f.getMonth()+1} · ${f.toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"})}`;
+  box.innerHTML =
+    `<div class="list-row neg-row" style="font-weight:800;"><span>Total (${gs.length} gasto${gs.length>1?"s":""})</span><span>-${money(total)}</span></div>` +
+    `<div class="cat-group" style="margin-top:10px;">Por concepto</div>` +
+    resumen.map(x=>`<div class="list-row neg-row"><span>${escH(x.n)}${x.q>1?" · "+x.q+" veces":""}</span><span>-${money(x.m)}</span></div>`).join("") +
+    `<div class="cat-group" style="margin-top:10px;">Cada gasto</div>` +
+    gs.map(g=>`<div class="list-row neg-row"><span>${fecha(g.f)} · ${escH(g.c)}</span><span>-${money(g.m)}</span></div>`).join("");
 }
 const sum = (arr,k)=>arr.reduce((t,d)=>t+(d[k]||0),0);
 function leyenda(items){ return items.map(([n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join(""); }
