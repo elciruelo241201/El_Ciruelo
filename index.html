@@ -500,6 +500,18 @@ button.secondary{
   </div>
 </div>
 
+<!-- Modal avisar sellos por WhatsApp -->
+<div class="modal-bg" id="modalWhats">
+  <div class="modal">
+    <button class="close" onclick="closeModal('modalWhats')">×</button>
+    <h3>💬 Avisar sus sellos por WhatsApp</h3>
+    <div class="hint">Revisa el mensaje y toca el botón: se abre WhatsApp con el chat del cliente listo para enviar. Envíalo solo a clientes que aceptaron recibir su aviso.</div>
+    <textarea id="whatsTexto" rows="7" style="width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:12px;font-family:inherit;font-size:14px;font-weight:600;resize:vertical;margin-top:8px;"></textarea>
+    <a id="whatsEnviar" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-top:16px;padding:13px;border-radius:13px;background:#25D366;color:#fff;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:15.5px;box-shadow:0 4px 10px rgba(37,211,102,0.35);" onclick="setTimeout(()=>closeModal('modalWhats'),400)">📲 Enviar por WhatsApp</a>
+    <button class="secondary" onclick="closeModal('modalWhats')">Ahora no</button>
+  </div>
+</div>
+
 <!-- Modal ajustar registro -->
 <div class="modal-bg" id="modalAjuste">
   <div class="modal">
@@ -769,7 +781,7 @@ function demoPost(action, payload){
       "Forma de pago": payload.formaPago, "Tipo (Sello/Canje)": payload.tipoSelloCanje || "", "Foto (link)": payload.foto || "", "Comentarios": payload.comentario || ""
     });
     demoSave("registro", all);
-    if(payload.placa && payload.tipoSelloCanje!=="Sin sello"){
+    if(payload.placa && payload.tipoSelloCanje!=="Sin sello" && payload.tipoVehiculo!=="Bici"){
       const clientes = demoStore("clientes", []);
       let c = clientes.find(c=>c.placa===payload.placa);
       if(!c){ c = {placa:payload.placa, nombre:payload.nombre, celular:payload.celular, tipo:(payload.categoria==="Lavada"?payload.tipoVehiculo:""), tamano:(payload.categoria==="Lavada"?payload.tamano:""), visitas:0, promo:"No", dias:0, avisar:"No"}; clientes.push(c); }
@@ -819,7 +831,7 @@ function demoPost(action, payload){
       if(r["Categoría"]==="Lavada"){ c.tipo = c.tipo||r["Tipo vehículo"]; c.tamano = c.tamano||r["Tamaño"]; }
       if(r["Categoría"]==="Lavada" && r["Paquete / Servicio"]==="Paq.#1 Básico"){
         if(r["Tipo (Sello/Canje)"]==="Canje") c.visitas = Math.max(0,c.visitas-SELLOS_PROMO);
-        else if(r["Tipo (Sello/Canje)"]!=="Cortesía" && r["Tipo (Sello/Canje)"]!=="Sin sello") c.visitas++;
+        else if(r["Tipo (Sello/Canje)"]!=="Cortesía" && r["Tipo (Sello/Canje)"]!=="Sin sello" && r["Tipo vehículo"]!=="Bici") c.visitas++;
       }
     });
     const clientes = Object.values(porPlaca).map(c=>Object.assign(c,{promo:c.visitas>=SELLOS_PROMO?(c.tipo==="Moto"?"🎁 50%":"🎁 Gratis"):"No", dias:0, avisar:"No"}));
@@ -1097,10 +1109,13 @@ async function aplicarVehiculoCliente(c){
 }
 function updateSelloVisibility(){
   const cat = chipVal("catChips");
-  const esBasico = cat==="Lavada" && document.getElementById("selPaquete").value === "basico";
+  const esBasico = cat==="Lavada" && document.getElementById("selPaquete").value === "basico" && !esBici();
   document.getElementById("selloBox").style.display = (esBasico && !esCortesia()) ? "block" : "none";
   actualizarSinSelloHint();
-  if(cat==="Lavada" && !esBasico){
+  if(esBici()){
+    document.querySelectorAll("#selloChips .chip").forEach(x=>x.classList.toggle("sel", x.dataset.v==="Sello"));
+    document.getElementById("selloHint").textContent = "";
+  } else if(cat==="Lavada" && !esBasico){
     document.getElementById("selloHint").textContent = "Este paquete no acumula sello para la promo (solo el Paq.#1 Básico cuenta).";
   } else if(esBasico){
     document.getElementById("selloHint").textContent = document.getElementById("inPlaca").value.trim().length>=5 ? document.getElementById("selloHint").textContent : "";
@@ -1204,8 +1219,9 @@ async function fillCeraTamano(){
 document.getElementById("selCeraTamano").addEventListener("change", recalcMonto);
 
 /* ---- cortesías (lavado sin cobro: trabajadores / familiares) ---- */
-function esCanje(){ return chipVal("catChips")==="Lavada" && document.getElementById("selPaquete").value==="basico" && !esCortesia() && !esSinSello() && chipVal("selloChips")==="Canje"; }
-function esSinSello(){ return chipVal("catChips")==="Lavada" && document.getElementById("selPaquete").value==="basico" && !esCortesia() && chipVal("selloChips")==="SinSello"; }
+function esCanje(){ return chipVal("catChips")==="Lavada" && document.getElementById("selPaquete").value==="basico" && !esBici() && !esCortesia() && !esSinSello() && chipVal("selloChips")==="Canje"; }
+function esBici(){ return chipVal("catChips")==="Lavada" && chipVal("tipoChips")==="Bici"; }
+function esSinSello(){ return chipVal("catChips")==="Lavada" && document.getElementById("selPaquete").value==="basico" && !esBici() && !esCortesia() && chipVal("selloChips")==="SinSello"; }
 function actualizarSinSelloHint(){ document.getElementById("sinSelloHint").style.display = esSinSello() ? "block" : "none"; }
 function esCortesia(){ return chipVal("catChips")==="Lavada" && chipVal("cobroChips")==="Cortesia"; }
 setupChips("cobroChips", ()=>{ aplicarCortesia(); });
@@ -1344,7 +1360,7 @@ function mostrarSellosPlaca(c, placa){
 }
 async function checkPlacaSellos(){
   const placa = document.getElementById("inPlaca").value.trim();
-  const esBasico = chipVal("catChips")==="Lavada" && document.getElementById("selPaquete").value === "basico";
+  const esBasico = chipVal("catChips")==="Lavada" && document.getElementById("selPaquete").value === "basico" && !esBici();
   const hint = document.getElementById("selloHint");
   if(placa.length < 5){ if(esBasico) hint.textContent = ""; currentCliente=null; placaVehAplicada=""; setVehLock(false); limpiarAutoDatos(); updateCanjeLock(); mostrarSellosPlaca(null, placa); return; }
   const data = await apiGet("clientes");
@@ -1373,6 +1389,34 @@ async function checkPlacaSellos(){
   } else {
     hint.textContent = "Cliente nuevo — este será su primer sello.";
   }
+}
+
+/* ---- aviso de sellos por WhatsApp (semiautomático: abre el chat con el mensaje listo) ---- */
+function mensajeSellos(nombre, n, tipoVeh, canje){
+  const quien = nombre ? `, ${nombre}` : "";
+  const saludo = `¡Gracias por venir a Autolavado EL CIRUELO${quien}! 🚗💦✨`;
+  if(canje) return `${saludo}\n¡Hoy canjeaste tu lavado GRATIS! 🎉🎁\nTu tarjeta vuelve a empezar: ${n} de ${SELLOS_PROMO} sellos ⭐ ¡Te esperamos pronto! 🧽💙`;
+  const premio = tipoVeh==="Moto" ? "va con 50% de DESCUENTO" : "va GRATIS";
+  if(n>=SELLOS_PROMO) return `${saludo}\n¡Ya completaste tus ${SELLOS_PROMO} sellos!!! 🎉⭐\n¡En tu próxima visita (la 6ta) tu lavado ${premio}!!! 🎁🧽 (de lunes a viernes)`;
+  return `${saludo}\nYa llevas ${n} de ${SELLOS_PROMO} sellos!!! ⭐🧽\nRecuerda, a la 6ta visita, tu lavado ${premio}!!! 🎁🎉`;
+}
+async function ofrecerWhatsApp(info){
+  try{
+    if(info.tipoSello!=="Sello" && info.tipoSello!=="Canje") return;
+    const cel = String(info.celular||"").replace(/\D/g,"");
+    const tel = cel.length===10 ? "52"+cel : (cel.length===12 && cel.startsWith("52") ? cel : "");
+    if(!tel || !info.placa) return;
+    const data = await apiGet("clientes");
+    const c = (data.clientes||[]).find(x=>String(x.placa).toUpperCase()===String(info.placa).toUpperCase());
+    const n = c ? (Number(c.visitas)||0) : 0;
+    const texto = mensajeSellos(info.nombre, n, info.tipoVehiculo, info.tipoSello==="Canje");
+    document.getElementById("whatsTexto").value = texto;
+    const a = document.getElementById("whatsEnviar");
+    const actualizar = ()=>{ a.href = "https://wa.me/"+tel+"?text="+encodeURIComponent(document.getElementById("whatsTexto").value); };
+    document.getElementById("whatsTexto").oninput = actualizar;
+    actualizar();
+    openModal("modalWhats");
+  }catch(e){}
 }
 
 /* ---- foto de evidencia ---- */
@@ -1450,7 +1494,7 @@ async function guardarRegistro(){
     if(!tipoVehiculo){ showToast("Elige el tipo de vehículo"); return; }
     if(!tamano){ showToast("Elige el tamaño"); return; }
   }
-  if(!placa){ showToast("Anota la placa del vehículo"); return; }
+  if(!placa && !esBici()){ showToast("Anota la placa del vehículo"); return; }
   if(!fotoDataUrl){ showToast("La foto de evidencia es obligatoria"); return; }
   const esCort = esCortesia();
   if(esCort){
@@ -1465,7 +1509,7 @@ async function guardarRegistro(){
   if(Number(monto) < sumExtras){ showToast("El monto cobrado es menor que la suma de los extras"); return; }
   const montoLavado = Number(monto) - sumExtras; // el total cobrado se reparte: lavado + extras
 
-  const esBasico = categoria==="Lavada" && document.getElementById("selPaquete").value === "basico";
+  const esBasico = categoria==="Lavada" && document.getElementById("selPaquete").value === "basico" && !esBici();
   let tipoSelloCanje = esCort ? "Cortesía" : (esBasico ? (chipVal("selloChips")==="SinSello" ? "Sin sello" : chipVal("selloChips")) : "");
   if(tipoSelloCanje === "Canje"){
     const visitas = currentCliente ? (Number(currentCliente.visitas)||0) : 0;
@@ -1509,6 +1553,7 @@ async function guardarRegistro(){
     });
     if(re.error){ showToast("Error en extra "+e.servicio+": "+re.error); return; }
   }
+  const infoWhats = {tipoSello: tipoSelloCanje, celular: payload.celular, nombre: payload.nombre, placa, tipoVehiculo};
   showToast(extras.length ? `¡Registrado con ${extras.length} extra${extras.length>1?"s":""}! 💧` : "¡Registrado! 💧");
   document.querySelector('#extraChips .chip[data-v="No"]').click(); // reinicia la pregunta de extras
   document.querySelector('#cobroChips .chip[data-v="Normal"]').click(); // vuelve a cobro normal
@@ -1522,6 +1567,7 @@ async function guardarRegistro(){
   if(document.querySelector('#selPaquete option[value="basico"]')) document.getElementById("selPaquete").value = "basico";
   currentCliente = null; updateCanjeLock();
   go("hoy");
+  ofrecerWhatsApp(infoWhats);
 }
 
 /* ============================================================
