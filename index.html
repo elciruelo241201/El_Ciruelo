@@ -260,6 +260,7 @@ button.secondary{
   <div class="view" id="view-registrar">
     <div class="card">
       <h3>📝 Nuevo registro</h3>
+      <div id="datosCliente">
       <label>Placa * (escríbela primero: el resto se llena solo)</label>
       <input id="inPlaca" type="text" placeholder="Ej. ABC1234" maxlength="8" style="text-transform:uppercase;">
       <div id="placaSellos" class="placa-sellos" style="display:none;"></div>
@@ -267,6 +268,7 @@ button.secondary{
       <div class="row2">
         <div><label>Nombre</label><input id="inNombre" type="text" placeholder="Nombre del cliente"></div>
         <div><label>Celular</label><input id="inCelular" type="tel" placeholder="10 dígitos" maxlength="10"></div>
+      </div>
       </div>
 
       <label>Categoría *</label>
@@ -279,9 +281,9 @@ button.secondary{
       <div id="lavadaFields">
         <label>Tipo de vehículo *</label>
         <div class="chips" id="tipoChips">
-          <div class="chip sel" data-v="Coche">Coche</div>
-          <div class="chip" data-v="Camioneta">Camioneta</div>
-          <div class="chip" data-v="Moto">Moto</div>
+          <div class="chip sel" data-v="Coche">🚗 Coche</div>
+          <div class="chip" data-v="Camioneta">🛻 Camioneta</div>
+          <div class="chip" data-v="Moto">🏍️ Moto</div>
           <div class="chip" data-v="Bici">🚲 Bici</div>
         </div>
         <label>Tamaño *</label>
@@ -290,7 +292,7 @@ button.secondary{
         <select id="selPaquete"></select>
         <label>Tipo de cobro</label>
         <div class="chips" id="cobroChips">
-          <div class="chip sel" data-v="Normal">💵 Cobro normal</div>
+          <div class="chip sel" data-v="Normal">💵 Cobro</div>
           <div class="chip" data-v="Cortesia">🤝 Cortesía</div>
         </div>
         <div id="cortesiaBox" style="display:none;">
@@ -325,8 +327,8 @@ button.secondary{
         <div id="ceraFields" style="display:none;">
           <label>Tipo de vehículo *</label>
           <div class="chips" id="ceraTipoChips">
-            <div class="chip sel" data-v="Coche">Coche</div>
-            <div class="chip" data-v="Camioneta">Camioneta</div>
+            <div class="chip sel" data-v="Coche">🚗 Coche</div>
+            <div class="chip" data-v="Camioneta">🛻 Camioneta</div>
           </div>
           <label>Tamaño *</label>
           <select id="selCeraTamano"></select>
@@ -1060,8 +1062,19 @@ setupChips("catChips", (v)=>{
   if(v==="Extra") fillServicioOtro(false);
   recalcMonto();
   updateSelloVisibility();
+  actualizarCamposCliente();
 });
-setupChips("tipoChips", ()=>{ fillTamano(); recalcMonto(); });
+function actualizarCamposCliente(){
+  const bici = esBici();
+  document.getElementById("datosCliente").style.display = bici ? "none" : "block";
+  if(bici){ // la bici no acumula sellos ni lleva seguimiento: se quitan placa, nombre y celular
+    ["inPlaca","inNombre","inCelular"].forEach(id=>{ document.getElementById(id).value = ""; });
+    placaVehAplicada = ""; autoNombre = ""; autoCel = ""; currentCliente = null;
+    setVehLock(false);
+    document.getElementById("placaSellos").style.display = "none";
+  }
+}
+setupChips("tipoChips", ()=>{ actualizarCamposCliente(); fillTamano(); recalcMonto(); });
 setupChips("pagoChips", ()=>{});
 setupChips("selloChips", ()=>{ actualizarSinSelloHint(); recalcMonto(); });
 
