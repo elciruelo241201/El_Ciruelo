@@ -383,6 +383,12 @@ button.secondary{
       <h3>⚠️ Clientes para avisar (10+ días)</h3>
       <div id="avisarLista"><div class="empty">Cargando…</div></div>
     </div>
+    <div class="card solo-admin">
+      <h3>📲 Avisar sellos por WhatsApp</h3>
+      <div class="hint">Clientes con celular y sellos. Toca “Avisar”, revisa el mensaje y envíalo. Los ya avisados quedan marcados ✓.</div>
+      <input id="buscarAvisoSellos" type="text" placeholder="Buscar por nombre o placa" style="width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:12px;font-family:inherit;font-size:14px;font-weight:600;margin:8px 0;">
+      <div id="avisoSellosLista"><div class="empty">Cargando…</div></div>
+    </div>
   </div>
 
   <!-- ===================== CATALOGO ===================== -->
@@ -1615,8 +1621,36 @@ async function buscarCliente(){
       </div>
     </div>`;
 }
+let avisoSellosClientes = [];
+function avisadosSellos(){ try{ return JSON.parse(localStorage.getItem("elciruelo_avisados_sellos")||"{}"); }catch(e){ return {}; } }
+function celValido(c){ const d=String(c||"").replace(/\D/g,""); return d.length===10 || (d.length===12 && d.startsWith("52")); }
+function renderAvisoSellos(){
+  const box = document.getElementById("avisoSellosLista"); if(!box) return;
+  const q = (document.getElementById("buscarAvisoSellos").value||"").toLowerCase().trim();
+  const av = avisadosSellos();
+  const list = avisoSellosClientes.filter(c=>!q || String(c.nombre||"").toLowerCase().includes(q) || String(c.placa||"").toLowerCase().includes(q));
+  if(!list.length){ box.innerHTML = '<div class="empty">Sin clientes con celular y sellos</div>'; return; }
+  box.innerHTML = list.map(c=>{
+    const i = avisoSellosClientes.indexOf(c);
+    const ok = av[String(c.placa).toUpperCase()];
+    return `<div class="list-row">
+      <span>${escH(c.nombre||c.placa)} <span style="color:var(--ink-soft);font-weight:700;">(${escH(c.placa)}) · ${Number(c.visitas)||0} sellos</span></span>
+      <button class="secondary" style="width:auto;margin:0;padding:7px 12px;" onclick="avisarSellosCliente(${i})">${ok?"✓ ":""}📲 Avisar</button>
+    </div>`;
+  }).join("");
+}
+function avisarSellosCliente(i){
+  const c = avisoSellosClientes[i]; if(!c) return;
+  const av = avisadosSellos(); av[String(c.placa).toUpperCase()] = isoDate(new Date());
+  try{ localStorage.setItem("elciruelo_avisados_sellos", JSON.stringify(av)); }catch(e){}
+  ofrecerWhatsApp({tipoSello:"Sello", celular:c.celular, placa:c.placa, nombre:c.nombre, tipoVehiculo:c.tipo});
+  renderAvisoSellos();
+}
+document.getElementById("buscarAvisoSellos").addEventListener("input", renderAvisoSellos);
 async function loadClientes(){
   const data = await apiGet("clientes");
+  avisoSellosClientes = (data.clientes||[]).filter(c=>celValido(c.celular) && Number(c.visitas)>0);
+  renderAvisoSellos();
   const list = (data.clientes||[]).filter(c=>c.avisar && String(c.avisar).includes("Sí"));
   const box = document.getElementById("avisarLista");
   if(!list.length){ box.innerHTML = '<div class="empty">Nadie pendiente de avisar 🎉</div>'; return; }
