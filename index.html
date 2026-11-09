@@ -1408,7 +1408,7 @@ async function checkPlacaSellos(){
 function mensajeSellos(nombre, n, tipoVeh, canje){
   const quien = nombre ? `, ${nombre}` : "";
   const saludo = `¡Gracias por venir a Autolavado EL CIRUELO${quien}! 🚗💦✨`;
-  if(canje) return `${saludo}\n¡Hoy canjeaste tu lavado GRATIS! 🎉🎁\nTu tarjeta vuelve a empezar: ${n} de ${SELLOS_PROMO} sellos ⭐ ¡Te esperamos pronto! 🧽💙`;
+  if(canje) return `${saludo}\n${tipoVeh==="Moto" ? "¡Hoy canjeaste la promo del 50% de DESCUENTO!!! 🎉🎁" : "¡Hoy canjeaste tu lavado GRATIS! 🎉🎁"}\nTu tarjeta vuelve a empezar: ${n} de ${SELLOS_PROMO} sellos ⭐ ¡Te esperamos pronto! 🧽💙`;
   const premio = tipoVeh==="Moto" ? "va con 50% de DESCUENTO" : "va GRATIS";
   if(n>=SELLOS_PROMO) return `${saludo}\n¡Ya completaste tus ${SELLOS_PROMO} sellos!!! 🎉⭐\n¡En tu próxima visita (la 6ta) tu lavado ${premio}!!! 🎁🧽 (de lunes a viernes)`;
   return `${saludo}\nYa llevas ${n} de ${SELLOS_PROMO} sellos!!! ⭐🧽\nRecuerda, a la 6ta visita, tu lavado ${premio}!!! 🎁🎉`;
