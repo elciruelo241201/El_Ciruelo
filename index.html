@@ -391,6 +391,67 @@ button.secondary{
     </div>
   </div>
 
+  <!-- ===================== PRODUCTOS ===================== -->
+  <div class="view" id="view-productos">
+    <div class="card">
+      <h3>🛒 Vender productos</h3>
+      <div class="hint">Aromatizantes y bebidas. Se registran aparte de los servicios de lavado. Toca + para agregar piezas.</div>
+      <div id="prodVenta"><div class="empty">Cargando…</div></div>
+      <label>Forma de pago</label>
+      <div class="chips" id="prodPagoChips">
+        <div class="chip sel" data-v="Efectivo">💵 Efectivo</div>
+        <div class="chip" data-v="Tarjeta">💳 Tarjeta</div>
+      </div>
+      <div class="total-box"><span>Total a cobrar</span><span class="amt" id="prodTotal">$0</span></div>
+      <button class="primary" onclick="guardarVentaProductos()">Guardar venta</button>
+    </div>
+    <div class="card">
+      <h3>🧾 Ventas de productos de hoy</h3>
+      <div id="prodHoy"><div class="empty">Cargando…</div></div>
+    </div>
+    <div class="card">
+      <h3>📦 Existencias</h3>
+      <div id="prodExistencias"><div class="empty">Cargando…</div></div>
+    </div>
+    <div class="card solo-admin">
+      <h3>📥 Registrar compra</h3>
+      <div class="hint">Sube la existencia. La compra se anota en la caja de ese producto (no se mezcla con los gastos del autolavado).</div>
+      <label>Producto</label>
+      <select id="compProducto" onchange="compraCambio(true)"></select>
+      <label>Cantidad comprada</label>
+      <div class="chips" id="compUnidadChips">
+        <div class="chip sel" data-v="Piezas">Piezas</div>
+        <div class="chip" data-v="Cajas">📦 Cajas</div>
+      </div>
+      <input id="compCantidad" type="number" inputmode="numeric" placeholder="0">
+      <div class="hint" id="compHint"></div>
+      <label>Costo total pagado (MXN)</label>
+      <input id="compTotal" type="number" inputmode="decimal" placeholder="0">
+      <button class="secondary" onclick="guardarCompraProducto()">+ Guardar compra</button>
+    </div>
+    <div class="card solo-admin">
+      <h3>⚖️ Ajustar inventario</h3>
+      <div class="hint">Para el inventario inicial, mermas o conteos. Usa número negativo para restar (ej. -2).</div>
+      <label>Producto</label>
+      <select id="ajProducto"></select>
+      <label>Cantidad (+ o −)</label>
+      <input id="ajProdCantidad" type="number" inputmode="numeric" placeholder="Ej. 12 o -2">
+      <label>Motivo</label>
+      <select id="ajProdMotivo"><option>Inventario inicial</option><option>Conteo</option><option>Merma / roto</option><option>Regalo / cortesía</option><option>Consumo propio</option><option>Otro</option></select>
+      <button class="secondary" onclick="guardarAjusteProducto()">Guardar ajuste</button>
+    </div>
+    <div class="card solo-admin">
+      <h3>💲 Productos y precios</h3>
+      <div class="hint">Toca ✏️ para cambiar precio, costo, mínimo o piezas por caja.</div>
+      <div id="prodCatalogo"></div>
+      <button class="secondary" onclick="abrirProducto(-1)">+ Agregar producto</button>
+    </div>
+    <div class="card solo-admin">
+      <h3>📈 Las 3 cajas del mes</h3>
+      <div id="prodMes"><div class="empty">Cargando…</div></div>
+    </div>
+  </div>
+
   <!-- ===================== CATALOGO ===================== -->
   <div class="view" id="view-catalogo">
     <div class="card">
@@ -419,6 +480,13 @@ button.secondary{
     <div class="solo-admin" id="histWrap">
       <div class="card">
         <h3>📈 Históricos</h3>
+        <label style="margin-top:0;">Caja</label>
+        <div class="chips" id="histCajaChips">
+          <div class="chip sel" data-v="Autolavado">🧽 Autolavado</div>
+          <div class="chip" data-v="Bebidas">🍺 Bebidas</div>
+          <div class="chip" data-v="Aromatizantes">🌸 Aromatizantes</div>
+        </div>
+        <label>Periodo</label>
         <div class="chips" id="histChips">
           <div class="chip sel" data-v="sem">Semana actual</div>
           <div class="chip" data-v="mes">Mes actual</div>
@@ -435,12 +503,17 @@ button.secondary{
         <div class="kpis" id="histKpis"></div>
       </div>
       <div id="histCharts">
-        <div class="card"><h3>💵 Ingresos vs gastos</h3><div class="hint" id="histSub1"></div><div class="legend" id="leg1"></div><div id="ch1" class="chart"></div></div>
-        <div class="card"><h3>🧾 Detalle de gastos</h3><div class="hint">Lo que registras con "+ Guardar gasto" en el periodo elegido (los sueldos van aparte, por asistencia).</div><div id="histGastos"></div></div>
-        <div class="card"><h3>📊 Utilidad</h3><div class="hint">Verde = ganancia · Rojo = pérdida</div><div id="ch2" class="chart"></div><div id="histExtremos" class="hint" style="margin-top:6px;"></div></div>
-        <div class="card"><h3>⚖️ Contra el periodo anterior</h3><div class="hint" id="histSub3"></div><div class="legend" id="leg3"></div><div id="ch3" class="chart"></div></div>
-        <div class="card"><h3>🧽 Servicios realizados</h3><div class="legend" id="leg4"></div><div id="ch4" class="chart"></div></div>
-        <div class="card">
+        <div class="card hist-auto"><h3>💵 Ingresos vs gastos</h3><div class="hint" id="histSub1"></div><div class="legend" id="leg1"></div><div id="ch1" class="chart"></div></div>
+        <div class="card hist-auto"><h3>🧾 Detalle de gastos</h3><div class="hint">Lo que registras con "+ Guardar gasto" en el periodo elegido (los sueldos van aparte, por asistencia).</div><div id="histGastos"></div></div>
+        <div class="card hist-auto"><h3>📊 Utilidad</h3><div class="hint">Verde = ganancia · Rojo = pérdida</div><div id="ch2" class="chart"></div><div id="histExtremos" class="hint" style="margin-top:6px;"></div></div>
+        <div class="card hist-auto"><h3>⚖️ Contra el periodo anterior</h3><div class="hint" id="histSub3"></div><div class="legend" id="leg3"></div><div id="ch3" class="chart"></div></div>
+        <div class="card hist-auto"><h3>🧽 Servicios realizados</h3><div class="legend" id="leg4"></div><div id="ch4" class="chart"></div></div>
+                <div class="card hist-prod" style="display:none;"><h3 id="histProdT1">💵 Ventas vs compras</h3><div class="hint" id="histProdSub"></div><div class="legend" id="leg5"></div><div id="ch5" class="chart"></div></div>
+        <div class="card hist-prod" style="display:none;"><h3>🗃️ Resumen de la caja</h3><div id="histProdCajas"></div></div>
+        <div class="card hist-prod" style="display:none;"><h3>⚖️ Contra el periodo anterior</h3><div class="legend" id="leg6"></div><div id="ch6" class="chart"></div></div>
+        <div class="card hist-prod" style="display:none;"><h3>📦 Productos vendidos</h3><div id="histProdDetalle"></div></div>
+        <div class="card hist-prod" style="display:none;"><h3>📥 Compras de productos</h3><div id="histProdCompras"></div></div>
+        <div class="card hist-auto">
           <button class="secondary" onclick="toggleHistTabla()" id="btnHistTabla" style="margin-top:0;">Ver tabla de datos</button>
           <div id="histTabla" style="display:none; overflow-x:auto; margin-top:10px;"></div>
         </div>
@@ -468,6 +541,7 @@ button.secondary{
   <button data-v="hoy" class="active"><span class="ic">💧</span>Hoy</button>
   <button data-v="registrar"><span class="ic">📝</span>Registrar</button>
   <button data-v="clientes"><span class="ic">🧾</span>Clientes</button>
+  <button data-v="productos"><span class="ic">🛒</span>Productos</button>
   <button data-v="catalogo"><span class="ic">💲</span>Tarifas</button>
   <button data-v="asistencia"><span class="ic">👷</span>Personal</button>
   <button data-v="cortes"><span class="ic">📅</span>Cortes</button>
@@ -505,6 +579,27 @@ button.secondary{
       (mínimo 4 dígitos), ese PIN quedará guardado en este celular/tablet para poder entrar después a modo
       Administrador (todas las pestañas). Guárdalo bien — solo el dueño debe saberlo.
     </div>
+  </div>
+</div>
+
+<!-- Modal producto -->
+<div class="modal-bg" id="modalProducto">
+  <div class="modal">
+    <button class="close" onclick="closeModal('modalProducto')">×</button>
+    <h3 id="prodModalTitulo">Producto</h3>
+    <label>Nombre</label>
+    <input id="pmNombre" type="text">
+    <label>Caja (categoría)</label>
+    <select id="pmCategoria"><option>Aromatizantes</option><option>Bebidas</option><option>Otro</option></select>
+    <label>Precio de venta (MXN)</label>
+    <input id="pmPrecio" type="number" inputmode="decimal">
+    <label>Costo por pieza (MXN)</label>
+    <input id="pmCosto" type="number" inputmode="decimal">
+    <label>Avisar cuando queden (mínimo)</label>
+    <input id="pmMinimo" type="number" inputmode="numeric">
+    <label>Piezas por caja (opcional)</label>
+    <input id="pmPzas" type="number" inputmode="numeric">
+    <button class="primary" onclick="guardarProductoModal()">Guardar</button>
   </div>
 </div>
 
@@ -685,7 +780,67 @@ function demoStore(key, fallback){
 }
 function demoSave(key, val){ localStorage.setItem("elciruelo_demo_"+key, JSON.stringify(val)); }
 
+
+/* ---- demo: productos ---- */
+const DEMO_PROD = [
+  {nombre:"Aromatizante $35",categoria:"Aromatizantes",precio:35,costo:0,minimo:0,pzasCaja:0},
+  {nombre:"Aromatizante $40",categoria:"Aromatizantes",precio:40,costo:0,minimo:0,pzasCaja:0},
+  {nombre:"Aromatizante $120",categoria:"Aromatizantes",precio:120,costo:0,minimo:0,pzasCaja:0},
+  {nombre:"Corona Familiar (vidrio 940ml)",categoria:"Bebidas",precio:0,costo:0,minimo:0,pzasCaja:0},
+  {nombre:"Corona Ámbar (vidrio 355ml)",categoria:"Bebidas",precio:0,costo:0,minimo:0,pzasCaja:0},
+  {nombre:"Estrella Modelo (lata 473ml)",categoria:"Bebidas",precio:0,costo:0,minimo:0,pzasCaja:0},
+  {nombre:"Coca Cola (600ml)",categoria:"Bebidas",precio:0,costo:0,minimo:0,pzasCaja:0}
+];
+function demoProdGet(action, params){
+  const prods = demoStore("productos", DEMO_PROD), mov = demoStore("movprod", []);
+  if(action==="productos"){
+    return {productos: prods.map(p=>{
+      let ex=0; mov.filter(m=>m.producto===p.nombre).forEach(m=>{ ex += m.tipo==="Venta" ? -m.cantidad : m.cantidad; });
+      return Object.assign({}, p, {existencia:ex});
+    })};
+  }
+  const d0=params.desde, d1=params.hasta;
+  return {movimientos: mov.filter(m=>{ const k=isoDate(new Date(m.fecha)); return k>=d0 && k<=d1; })};
+}
+function demoProdPost(action, p){
+  const prods = demoStore("productos", DEMO_PROD), mov = demoStore("movprod", []);
+  const find = n => prods.find(x=>x.nombre.toLowerCase()===String(n).toLowerCase());
+  const now = new Date().toISOString();
+  if(action==="ventaProductos"){
+    let total=0; const rows=[];
+    for(const it of p.items){
+      const pr=find(it.producto); if(!pr) return {error:"Producto no encontrado"};
+      if(!(pr.precio>0)) return {error:pr.nombre+" no tiene precio. Pídele al Administrador que lo ponga."};
+      rows.push({fecha:now,producto:pr.nombre,tipo:"Venta",cantidad:it.cantidad,precio:pr.precio,costo:pr.costo||0,total:it.cantidad*pr.precio,pago:p.formaPago,por:p.registradoPor,categoria:pr.categoria});
+      total += it.cantidad*pr.precio;
+    }
+    demoSave("movprod", mov.concat(rows)); return {ok:true,total};
+  }
+  if(action==="compraProducto"){
+    const pr=find(p.producto); if(!pr) return {error:"Producto no encontrado"};
+    const unit=p.total/p.cantidad; pr.costo=unit; demoSave("productos",prods);
+    mov.push({fecha:now,producto:pr.nombre,tipo:"Compra",cantidad:p.cantidad,precio:0,costo:unit,total:p.total,pago:"",por:"Admin",categoria:pr.categoria}); demoSave("movprod",mov);
+    return {ok:true};
+  }
+  if(action==="ajusteProducto"){
+    const pr=find(p.producto); if(!pr) return {error:"Producto no encontrado"};
+    mov.push({fecha:now,producto:pr.nombre,tipo:"Ajuste",cantidad:p.cantidad,precio:0,costo:pr.costo||0,total:0,pago:"",por:"Admin",comentario:p.motivo,categoria:pr.categoria}); demoSave("movprod",mov); return {ok:true};
+  }
+  if(action==="updateProducto"){
+    const pr=find(p.producto); if(!pr) return {error:"Producto no encontrado"};
+    pr.categoria=p.categoria; pr.precio=Number(p.precio)||0; pr.costo=Number(p.costo)||0; pr.minimo=Number(p.minimo)||0; pr.pzasCaja=Number(p.pzasCaja)||0;
+    demoSave("productos",prods); return {ok:true};
+  }
+  if(action==="addProducto"){
+    if(find(p.nombre)) return {error:"Ese producto ya existe"};
+    prods.push({nombre:p.nombre,categoria:p.categoria,precio:Number(p.precio)||0,costo:Number(p.costo)||0,minimo:Number(p.minimo)||0,pzasCaja:Number(p.pzasCaja)||0});
+    demoSave("productos",prods); return {ok:true};
+  }
+}
+const _DEMO_PROD_GET = ["productos","movProductos"], _DEMO_PROD_POST = ["ventaProductos","compraProducto","ajusteProducto","updateProducto","addProducto"];
+
 function demoGet(action, params){
+  if(_DEMO_PROD_GET.includes(action)) return demoProdGet(action, params);
   if(action==="catalogo") return demoStore("catalogo", DEMO.catalogo);
   if(action==="historico"){
     const z=n=>String(n).padStart(2,"0");
@@ -779,6 +934,7 @@ function demoGet(action, params){
   return {};
 }
 function demoPost(action, payload){
+  if(_DEMO_PROD_POST.includes(action)) return demoProdPost(action, payload);
   if(action==="addRegistro"){
     if(payload.tipoSelloCanje==="Canje" && esFinDeSemana()) return {error:"El canje de promo solo aplica de lunes a viernes"};
     const all = demoStore("registro", []);
@@ -888,6 +1044,7 @@ function go(view){
   document.querySelectorAll("nav.tabbar button").forEach(b=>b.classList.toggle("active", b.dataset.v===view));
   if(view==="hoy") loadHoy();
   if(view==="clientes") loadClientes();
+  if(view==="productos") loadProductos();
   if(view==="catalogo") loadCatalogo();
   if(view==="asistencia") loadAsistencia();
   if(view==="cortes") loadCortes();
@@ -931,7 +1088,7 @@ function borrarConfig(){
    ============================================================ */
 const ROLE_KEY = "elciruelo_role";
 const PIN_KEY = "elciruelo_admin_pin";
-const EMPLEADO_TABS = ["hoy","registrar","clientes","asistencia","cortes"];
+const EMPLEADO_TABS = ["hoy","registrar","clientes","productos","asistencia","cortes"];
 // Por seguridad, el panel siempre abre en modo Empleado; se requiere el PIN para entrar a modo Administrador.
 let ROLE = localStorage.getItem(ROLE_KEY) || "empleado";
 
@@ -1661,6 +1818,176 @@ async function loadClientes(){
     </div>`).join("");
 }
 
+
+/* ============================================================
+   PRODUCTOS (aromatizantes y bebidas)
+   ============================================================ */
+let PROD = [], prodQtyMap = {}, prodEditIdx = -1;
+const moneyP = n => "$" + (Number(n)||0).toLocaleString("es-MX",{maximumFractionDigits:2});
+setupChips("prodPagoChips");
+setupChips("compUnidadChips", ()=>compraCambio());
+
+async function loadProductos(){
+  const data = await apiGet("productos");
+  PROD = data.productos || [];
+  prodQtyMap = {};
+  renderProdVenta(); renderProdExistencias(); renderProdCatalogo(); llenarSelectsProd(); compraCambio(true);
+  const hoy = isoDate(new Date());
+  const mov = (await apiGet("movProductos",{desde:hoy,hasta:hoy})).movimientos || [];
+  renderProdHoy(mov);
+  const d = new Date(); const ini = isoDate(new Date(d.getFullYear(), d.getMonth(), 1));
+  const mes = (await apiGet("movProductos",{desde:ini,hasta:hoy})).movimientos || [];
+  let hist = null;
+  try{ hist = (await apiGet("historico",{desde:ini,hasta:hoy})).dias || null; }catch(e){}
+  renderProdMes(mes, hist);
+}
+function renderProdVenta(){
+  const box = document.getElementById("prodVenta");
+  if(!PROD.length){ box.innerHTML = '<div class="empty">Sin productos. Ejecuta activarProductos en Apps Script.</div>'; return; }
+  box.innerHTML = PROD.map((p,i)=>{
+    const sinPrecio = !(Number(p.precio)>0);
+    const q = prodQtyMap[i]||0;
+    return `<div class="list-row">
+      <span>${escH(p.nombre)}<br><span style="color:var(--ink-soft);font-weight:700;">${sinPrecio?"Sin precio":moneyP(p.precio)}</span></span>
+      <span style="display:flex;align-items:center;gap:10px;">
+        <button class="secondary" style="width:38px;margin:0;padding:6px 0;" ${sinPrecio?"disabled":""} onclick="prodQty(${i},-1)">−</button>
+        <b style="min-width:18px;text-align:center;">${q}</b>
+        <button class="secondary" style="width:38px;margin:0;padding:6px 0;" ${sinPrecio?"disabled":""} onclick="prodQty(${i},1)">+</button>
+      </span></div>`;
+  }).join("");
+  actualizarTotalProd();
+}
+function prodQty(i,d){ prodQtyMap[i] = Math.max(0,(prodQtyMap[i]||0)+d); renderProdVenta(); }
+function actualizarTotalProd(){
+  const t = PROD.reduce((a,p,i)=>a+(prodQtyMap[i]||0)*(Number(p.precio)||0),0);
+  document.getElementById("prodTotal").textContent = moneyP(t);
+  return t;
+}
+async function guardarVentaProductos(){
+  const items = PROD.map((p,i)=>({producto:p.nombre,cantidad:prodQtyMap[i]||0})).filter(x=>x.cantidad>0);
+  if(!items.length){ showToast("Agrega al menos un producto"); return; }
+  const r = await apiPost("ventaProductos",{items, formaPago:chipVal("prodPagoChips"), registradoPor:(typeof ROLE!=="undefined"&&ROLE==="empleado")?"Usuario":"Admin"});
+  if(r && r.error){ showToast(r.error); return; }
+  showToast("Venta guardada ✓ " + moneyP(r.total));
+  loadProductos();
+}
+const catDe = m => m.categoria || (PROD.find(p=>p.nombre===m.producto)||{}).categoria || "Otro";
+function porCaja(lista, f){ const g={}; lista.forEach(x=>{ const c=f(x); (g[c]=g[c]||[]).push(x); }); return g; }
+function renderProdHoy(mov){
+  const box = document.getElementById("prodHoy");
+  const v = mov.filter(m=>m.tipo==="Venta");
+  if(!v.length){ box.innerHTML = '<div class="empty">Aún no hay ventas de productos hoy</div>'; return; }
+  const g = porCaja(v, catDe);
+  box.innerHTML = Object.keys(g).map(c=>{
+    const l=g[c], tot=l.reduce((a,m)=>a+m.total,0), ef=l.filter(m=>m.pago==="Efectivo").reduce((a,m)=>a+m.total,0);
+    return `<div class="cat-group">${escH(c)}</div>`
+      + l.map(m=>`<div class="list-row"><span>${m.cantidad} × ${escH(m.producto)} <span style="color:var(--ink-soft);font-weight:700;">(${escH(m.pago||"")})</span></span><b>${moneyP(m.total)}</b></div>`).join("")
+      + `<div class="list-row"><span><b>Caja ${escH(c)}</b> · 💵 ${moneyP(ef)} · 💳 ${moneyP(tot-ef)}</span><b>${moneyP(tot)}</b></div>`;
+  }).join("");
+}
+function renderProdExistencias(){
+  const box = document.getElementById("prodExistencias");
+  if(!PROD.length){ box.innerHTML = '<div class="empty">Sin productos</div>'; return; }
+  const g = porCaja(PROD, p=>p.categoria||"Otro");
+  box.innerHTML = Object.keys(g).map(c=>`<div class="cat-group">${escH(c)}</div>` + g[c].map(p=>{
+    const ex = Number(p.existencia)||0;
+    const bajo = ex<0 || (Number(p.minimo)>0 && ex<=Number(p.minimo));
+    return `<div class="list-row"><span>${escH(p.nombre)}</span><span class="${bajo?"badge-warn":""}" style="font-weight:800;">${ex} pzas${bajo?" ⚠️":""}</span></div>`;
+  }).join("")).join("");
+}
+function renderProdCatalogo(){
+  const box = document.getElementById("prodCatalogo"); if(!box) return;
+  const g = porCaja(PROD.map((p,i)=>Object.assign({_i:i},p)), p=>p.categoria||"Otro");
+  box.innerHTML = Object.keys(g).map(c=>`<div class="cat-group">${escH(c)}</div>`+g[c].map(p=>`<div class="list-row"><span>${escH(p.nombre)}<br><span style="color:var(--ink-soft);font-weight:700;">Venta ${Number(p.precio)>0?moneyP(p.precio):"—"} · Costo ${Number(p.costo)>0?moneyP(p.costo):"—"}${p.pzasCaja?` · Caja ${p.pzasCaja}`:""}</span></span><button class="secondary" style="width:auto;margin:0;padding:7px 12px;" onclick="abrirProducto(${p._i})">✏️</button></div>`).join("")).join("");
+}
+function renderProdMes(mov, hist){
+  const box = document.getElementById("prodMes"); if(!box) return;
+  const g = porCaja(mov.filter(m=>m.tipo==="Venta"||m.tipo==="Compra"), catDe);
+  const cats = ["Bebidas","Aromatizantes"].concat(Object.keys(g).filter(c=>c!=="Bebidas"&&c!=="Aromatizantes"));
+  let sinCosto=false, html="";
+  if(hist){
+    const ing=hist.reduce((a,d)=>a+(d.ingresos||0),0), gas=hist.reduce((a,d)=>a+(d.gastos||0),0);
+    html += `<div class="cat-group">Caja Autolavado (servicios)</div>
+      <div class="list-row"><span>Ingresos</span><b>${moneyP(ing)}</b></div>
+      <div class="list-row"><span>Gastos (incluye sueldos)</span><b>${moneyP(gas)}</b></div>
+      <div class="list-row"><span><b>Utilidad</b></span><b>${moneyP(ing-gas)}</b></div>`;
+  }
+  html += cats.map(c=>{
+    const l=g[c]||[], v=l.filter(m=>m.tipo==="Venta"), co=l.filter(m=>m.tipo==="Compra");
+    const ventas=v.reduce((a,m)=>a+m.total,0), ef=v.filter(m=>m.pago==="Efectivo").reduce((a,m)=>a+m.total,0);
+    const costoV=v.reduce((a,m)=>a+m.cantidad*(m.costo||0),0), compras=co.reduce((a,m)=>a+m.total,0);
+    if(v.some(m=>!(m.costo>0))) sinCosto=true;
+    return `<div class="cat-group">Caja ${escH(c)}</div>
+      <div class="list-row"><span>Ventas</span><b>${moneyP(ventas)}</b></div>
+      <div class="list-row"><span>   💵 Efectivo · 💳 Tarjeta</span><span>${moneyP(ef)} · ${moneyP(ventas-ef)}</span></div>
+      <div class="list-row"><span>Compras</span><b>${moneyP(compras)}</b></div>
+      <div class="list-row"><span><b>Saldo (ventas − compras)</b></span><b>${moneyP(ventas-compras)}</b></div>
+      <div class="list-row"><span>Utilidad de lo vendido</span><b>${moneyP(ventas-costoV)}</b></div>`;
+  }).join("");
+  box.innerHTML = html + '<div class="hint">Las tres cajas son independientes: lo que entra o sale de una no afecta a las otras.</div>' + (sinCosto?'<div class="hint">Algunas ventas no tienen costo por pieza registrado; ponlo en ✏️ para ver la utilidad real.</div>':"");
+}
+function llenarSelectsProd(){
+  const opts = PROD.map((p,i)=>`<option value="${i}">${escH(p.nombre)}</option>`).join("");
+  ["compProducto","ajProducto"].forEach(id=>{ const el=document.getElementById(id); if(el){ const v=el.value; el.innerHTML=opts; if(v) el.value=v; } });
+}
+function compraCambio(reset){
+  const p = PROD[document.getElementById("compProducto").value]; if(!p) return;
+  const cajas = chipVal("compUnidadChips")==="Cajas";
+  const h = document.getElementById("compHint");
+  if(cajas && !(p.pzasCaja>0)){ h.textContent = "Este producto no tiene “piezas por caja”: ponlo en ✏️ o compra por piezas."; }
+  else if(cajas){ h.textContent = `1 caja = ${p.pzasCaja} piezas.`; }
+  else h.textContent = "";
+}
+async function guardarCompraProducto(){
+  const p = PROD[document.getElementById("compProducto").value];
+  if(!p){ showToast("Elige un producto"); return; }
+  const n = Number(document.getElementById("compCantidad").value);
+  const total = Number(document.getElementById("compTotal").value);
+  const cajas = chipVal("compUnidadChips")==="Cajas";
+  if(!(n>0)){ showToast("Escribe la cantidad"); return; }
+  if(!(total>=0) || document.getElementById("compTotal").value===""){ showToast("Escribe el costo total pagado"); return; }
+  if(cajas && !(p.pzasCaja>0)){ showToast("Falta definir las piezas por caja"); return; }
+  const pzas = cajas ? n*p.pzasCaja : n;
+  const r = await apiPost("compraProducto",{producto:p.nombre, cantidad:pzas, total, detalle: cajas?`${n} caja${n>1?"s":""}`:"", registradoPor:"Admin"});
+  if(r && r.error){ showToast(r.error); return; }
+  document.getElementById("compCantidad").value=""; document.getElementById("compTotal").value="";
+  showToast("Compra guardada ✓");
+  loadProductos();
+}
+async function guardarAjusteProducto(){
+  const p = PROD[document.getElementById("ajProducto").value];
+  const n = Number(document.getElementById("ajProdCantidad").value);
+  if(!p){ showToast("Elige un producto"); return; }
+  if(!n){ showToast("Escribe la cantidad (+ o −)"); return; }
+  const r = await apiPost("ajusteProducto",{producto:p.nombre, cantidad:n, motivo:document.getElementById("ajProdMotivo").value, registradoPor:"Admin"});
+  if(r && r.error){ showToast(r.error); return; }
+  document.getElementById("ajProdCantidad").value="";
+  showToast("Ajuste guardado ✓");
+  loadProductos();
+}
+function abrirProducto(i){
+  prodEditIdx = i;
+  const p = i>=0 ? PROD[i] : {nombre:"",categoria:"Aromatizantes",precio:"",costo:"",minimo:0,pzasCaja:""};
+  document.getElementById("prodModalTitulo").textContent = i>=0 ? "Editar producto" : "Agregar producto";
+  const nm = document.getElementById("pmNombre"); nm.value = p.nombre; nm.disabled = i>=0;
+  document.getElementById("pmCategoria").value = p.categoria||"Otro";
+  document.getElementById("pmPrecio").value = Number(p.precio)>0 ? p.precio : "";
+  document.getElementById("pmCosto").value = Number(p.costo)>0 ? p.costo : "";
+  document.getElementById("pmMinimo").value = p.minimo||0;
+  document.getElementById("pmPzas").value = p.pzasCaja||"";
+  openModal("modalProducto");
+}
+async function guardarProductoModal(){
+  const nombre = document.getElementById("pmNombre").value.trim();
+  if(!nombre){ showToast("Escribe el nombre"); return; }
+  const d = {categoria:document.getElementById("pmCategoria").value, precio:document.getElementById("pmPrecio").value, costo:document.getElementById("pmCosto").value,
+    minimo:document.getElementById("pmMinimo").value, pzasCaja:document.getElementById("pmPzas").value};
+  const r = prodEditIdx>=0 ? await apiPost("updateProducto", Object.assign({producto:PROD[prodEditIdx].nombre}, d))
+                           : await apiPost("addProducto", Object.assign({nombre}, d));
+  if(r && r.error){ showToast(r.error); return; }
+  closeModal("modalProducto"); showToast("Producto guardado ✓"); loadProductos();
+}
+
 /* ============================================================
    CATALOGO
    ============================================================ */
@@ -1881,6 +2208,7 @@ const dFrom = s => new Date(s+"T00:00:00");
 const dTxt = d => d.getDate()+" "+MESES[d.getMonth()];
 let histDatos = null;
 
+setupChips("histCajaChips", ()=>loadHistoricos());
 setupChips("histChips", (v)=>{
   document.getElementById("histAbierta").style.display = v==="abierta" ? "block" : "none";
   if(v!=="abierta") loadHistoricos();
@@ -1928,10 +2256,12 @@ async function loadHistoricos(){
   if(r.error){ txt.textContent=r.error; charts.style.display="none"; kp.innerHTML=""; return; }
   charts.style.display="block";
   charts.style.opacity = ".5";
-  const [A, P, G] = await Promise.all([
+  const [A, P, G, MA, MP] = await Promise.all([
     apiGet("historico", {desde:isoDate(r.a), hasta:isoDate(r.b)}),
     apiGet("historico", {desde:isoDate(r.pa), hasta:isoDate(r.pb)}),
-    apiGet("gastos", {desde:isoDate(r.a), hasta:isoDate(r.b)})
+    apiGet("gastos", {desde:isoDate(r.a), hasta:isoDate(r.b)}),
+    apiGet("movProductos", {desde:isoDate(r.a), hasta:isoDate(r.b)}),
+    apiGet("movProductos", {desde:isoDate(r.pa), hasta:isoDate(r.pb)})
   ]);
   charts.style.opacity = "1";
   const dias = A.dias||[], prev = P.dias||[];
@@ -1954,6 +2284,10 @@ async function loadHistoricos(){
 
   renderDetalleGastos((G && G.gastos) || []);
   const B = buckets(dias);
+  const caja = chipVal("histCajaChips") || "Autolavado";
+  document.querySelectorAll(".hist-auto").forEach(e=>e.style.display = caja==="Autolavado" ? "" : "none");
+  document.querySelectorAll(".hist-prod").forEach(e=>e.style.display = caja!=="Autolavado" ? "" : "none");
+  if(caja!=="Autolavado"){ renderHistProductos(caja, MA, MP, B, por_(dias), nomPeriodo); return; }
   const por = dias.length>14 ? "por semana" : "por día";
   document.getElementById("histSub1").textContent = `Lo que entró y lo que salió, ${por}`;
   document.getElementById("leg1").innerHTML = leyenda([["Ingresos",C_ING],["Gastos (incl. sueldos)",C_GAS]]);
@@ -1983,6 +2317,61 @@ async function loadHistoricos(){
   document.getElementById("histTabla").innerHTML = `<table class="hist"><tr><th>${dias.length>14?"Semana":"Día"}</th><th>Ingresos</th><th>Gastos</th><th>Utilidad</th><th>Lavadas</th><th>Extras</th></tr>` +
     B.map(b=>{ const i=sum(b.dias,"ingresos"), g=sum(b.dias,"gastos"); return `<tr><td>${b.label}</td><td style="color:${C_ING}">${money(i)}</td><td style="color:${C_GAS}">${money(g)}</td><td style="color:${i-g<0?C_GAS:C_ING}">${money(i-g)}</td><td>${sum(b.dias,"lavadas")}</td><td>${sum(b.dias,"extras")}</td></tr>`; }).join("") +
     `<tr><td><b>Total</b></td><td><b>${money(T.ingresos)}</b></td><td><b>${money(T.gastos)}</b></td><td><b>${money(T.utilidad)}</b></td><td><b>${T.lavadas}</b></td><td><b>${T.extras}</b></td></tr></table>`;
+}
+
+const C_BEB="#7B4FB3", C_ARO="#D9A400";
+function por_(dias){ return dias.length>14 ? "por semana" : "por día"; }
+function renderHistProductos(caja, MA, MP, B, por, nomPeriodo){
+  const kp = document.getElementById("histKpis");
+  const okA = MA && Array.isArray(MA.movimientos);
+  const subEl = document.getElementById("histProdSub");
+  if(!okA){
+    kp.innerHTML = "";
+    subEl.textContent = "Para ver los productos, actualiza Code.gs y ejecuta activarProductos.";
+    ["ch5","ch6","histProdCajas","histProdDetalle","histProdCompras","leg5","leg6"].forEach(id=>document.getElementById(id).innerHTML="");
+    return;
+  }
+  const cat = m => m.categoria || (typeof PROD!=="undefined" && (PROD.find(p=>p.nombre===m.producto)||{}).categoria) || "Otro";
+  const dk = m => isoDate(new Date(m.fecha));
+  const movA = MA.movimientos.filter(m=>cat(m)===caja), movP = ((MP && MP.movimientos)||[]).filter(m=>cat(m)===caja);
+  const calc = mov=>{ const v=mov.filter(m=>m.tipo==="Venta"), co=mov.filter(m=>m.tipo==="Compra");
+    const ven=v.reduce((a,m)=>a+m.total,0), com=co.reduce((a,m)=>a+m.total,0), cos=v.reduce((a,m)=>a+m.cantidad*(m.costo||0),0);
+    const ef=v.filter(m=>m.pago==="Efectivo").reduce((a,m)=>a+m.total,0);
+    return {ven, ef, com, saldo:ven-com, ut:ven-cos, piezas:v.reduce((a,m)=>a+m.cantidad,0)}; };
+  const A=calc(movA), P=calc(movP);
+  const delta=(act,ant,bueno)=>{ if(!ant) return `<div class="d neutro">${act?"sin dato previo":"—"}</div>`;
+    const pct=Math.round((act-ant)/Math.abs(ant)*100); if(pct===0) return `<div class="d neutro">= igual que antes</div>`;
+    return `<div class="d ${(pct>0)===bueno?"bien":"mal"}">${pct>0?"▲":"▼"} ${Math.abs(pct)}% vs anterior</div>`; };
+  kp.innerHTML = `
+    <div class="kpi ing"><div class="n">${money(A.ven)}</div><div class="l">Ventas</div>${delta(A.ven,P.ven,true)}</div>
+    <div class="kpi gas"><div class="n">${money(A.com)}</div><div class="l">Compras</div>${delta(A.com,P.com,false)}</div>
+    <div class="kpi ${A.saldo<0?"ut-neg":"ut-pos"}"><div class="n">${money(A.saldo)}</div><div class="l">Saldo</div>${delta(A.saldo,P.saldo,true)}</div>`;
+  document.getElementById("histProdT1").textContent = `💵 Caja ${caja}: ventas vs compras`;
+  subEl.textContent = `Lo que entró por ventas y lo que se gastó en compras, ${por}`;
+  document.getElementById("leg5").innerHTML = leyenda([["Ventas",C_ING],["Compras",C_GAS]]);
+  const inSet = (b,m)=>b.dias.some(d=>d.fecha===dk(m));
+  barChart("ch5", {grupos:B.map(b=>({label:b.label, vals:[movA.filter(m=>m.tipo==="Venta"&&inSet(b,m)).reduce((a,m)=>a+m.total,0), movA.filter(m=>m.tipo==="Compra"&&inSet(b,m)).reduce((a,m)=>a+m.total,0)]})),
+    series:[{n:"Ventas",c:C_ING},{n:"Compras",c:C_GAS}], valores:B.length<=7});
+  document.getElementById("leg6").innerHTML = leyenda([["Periodo anterior",C_ANT],["Este periodo",C_ACT]]);
+  barChart("ch6", {grupos:[{label:"Ventas",vals:[P.ven,A.ven]},{label:"Compras",vals:[P.com,A.com]},{label:"Saldo",vals:[P.saldo,A.saldo]}],
+    series:[{n:"Periodo anterior",c:C_ANT},{n:"Este periodo",c:C_ACT}], valores:true});
+  document.getElementById("histProdCajas").innerHTML = `
+      <div class="list-row"><span>Ventas</span><b>${money(A.ven)}</b></div>
+      <div class="list-row"><span>   💵 Efectivo · 💳 Tarjeta</span><span>${money(A.ef)} · ${money(A.ven-A.ef)}</span></div>
+      <div class="list-row"><span>Piezas vendidas</span><b>${A.piezas}</b></div>
+      <div class="list-row"><span>Compras</span><b>${money(A.com)}</b></div>
+      <div class="list-row"><span><b>Saldo (ventas − compras)</b></span><b style="color:${A.saldo<0?C_GAS:C_ING};">${money(A.saldo)}</b></div>
+      <div class="list-row"><span>Utilidad de lo vendido</span><b>${money(A.ut)}</b></div>
+      <div class="hint">Esta caja es independiente del Autolavado y de las demás cajas.</div>`;
+  const por_prod = {};
+  movA.filter(m=>m.tipo==="Venta").forEach(m=>{ const k=m.producto; (por_prod[k]=por_prod[k]||{n:k,q:0,t:0}); por_prod[k].q+=m.cantidad; por_prod[k].t+=m.total; });
+  const lp = Object.values(por_prod).sort((a,b)=>b.t-a.t);
+  document.getElementById("histProdDetalle").innerHTML = !lp.length ? '<div class="empty">No hay ventas en este periodo.</div>' :
+    lp.map(x=>`<div class="list-row"><span>${escH(x.n)} · ${x.q} pza${x.q>1?"s":""}</span><b>${money(x.t)}</b></div>`).join("");
+  const compras = movA.filter(m=>m.tipo==="Compra").sort((a,b)=>new Date(b.fecha)-new Date(a.fecha));
+  document.getElementById("histProdCompras").innerHTML = !compras.length ? '<div class="empty">No hay compras en este periodo.</div>' :
+    `<div class="list-row neg-row" style="font-weight:800;"><span>Total (${compras.length} compra${compras.length>1?"s":""})</span><span>-${money(compras.reduce((a,m)=>a+m.total,0))}</span></div>` +
+    compras.map(m=>{ const f=new Date(m.fecha); return `<div class="list-row neg-row"><span>${DIAS_S[f.getDay()]} ${f.getDate()}/${f.getMonth()+1} · ${escH(m.producto)} · ${m.cantidad} pza${m.cantidad>1?"s":""}</span><span>-${money(m.total)}</span></div>`; }).join("");
 }
 const escH = s => String(s==null?"":s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function renderDetalleGastos(lista){
