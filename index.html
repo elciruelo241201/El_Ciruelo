@@ -396,6 +396,7 @@ button.secondary{
     <div class="card">
       <h3>🛒 Vender productos</h3>
       <div class="hint">Aromatizantes y bebidas. Se registran aparte de los servicios de lavado. Toca + para agregar piezas.</div>
+      <div class="chips" id="prodVentaFiltro" style="margin-top:6px;"></div>
       <div id="prodVenta"><div class="empty">Cargando…</div></div>
       <label>Forma de pago</label>
       <div class="chips" id="prodPagoChips">
@@ -443,12 +444,9 @@ button.secondary{
     <div class="card solo-admin">
       <h3>💲 Productos y precios</h3>
       <div class="hint">Toca ✏️ para cambiar precio, costo, mínimo o piezas por caja.</div>
+      <div class="chips" id="prodCatFiltro" style="margin-top:6px;"></div>
       <div id="prodCatalogo"></div>
       <button class="secondary" onclick="abrirProducto(-1)">+ Agregar producto</button>
-    </div>
-    <div class="card solo-admin">
-      <h3>📈 Las 3 cajas del mes</h3>
-      <div id="prodMes"><div class="empty">Cargando…</div></div>
     </div>
   </div>
 
@@ -828,6 +826,10 @@ function demoProdPost(action, p){
   }
   if(action==="updateProducto"){
     const pr=find(p.producto); if(!pr) return {error:"Producto no encontrado"};
+    if(p.nuevoNombre && p.nuevoNombre!==pr.nombre){
+      if(find(p.nuevoNombre)) return {error:"Ya existe un producto con ese nombre"};
+      mov.forEach(m=>{ if(m.producto===pr.nombre) m.producto=p.nuevoNombre; }); demoSave("movprod",mov); pr.nombre=p.nuevoNombre;
+    }
     pr.categoria=p.categoria; pr.precio=Number(p.precio)||0; pr.costo=Number(p.costo)||0; pr.minimo=Number(p.minimo)||0; pr.pzasCaja=Number(p.pzasCaja)||0;
     demoSave("productos",prods); return {ok:true};
   }
@@ -1822,11 +1824,20 @@ async function loadClientes(){
 /* ============================================================
    PRODUCTOS (aromatizantes y bebidas)
    ============================================================ */
-let PROD = [], prodQtyMap = {}, prodEditIdx = -1;
+let PROD = [], prodQtyMap = {}, prodEditIdx = -1, prodVentaCat = "Bebidas", prodCatCat = "Bebidas";
 const moneyP = n => "$" + (Number(n)||0).toLocaleString("es-MX",{maximumFractionDigits:2});
 setupChips("prodPagoChips");
 setupChips("compUnidadChips", ()=>compraCambio());
 
+function cajasProd(){
+  const c=["Bebidas","Aromatizantes"]; PROD.forEach(p=>{ const k=p.categoria||"Otro"; if(!c.includes(k)) c.push(k); }); return c;
+}
+function renderFiltroCaja(id, actual, fn){
+  const box=document.getElementById(id); if(!box) return;
+  const ico={Bebidas:"🍺",Aromatizantes:"🌸"};
+  box.innerHTML = cajasProd().map(c=>`<div class="chip ${c===actual?"sel":""}" data-c="${escH(c)}">${ico[c]||"📦"} ${escH(c)}</div>`).join("");
+  box.querySelectorAll(".chip").forEach(el=>el.addEventListener("click",()=>fn(el.dataset.c)));
+}
 async function loadProductos(){
   const data = await apiGet("productos");
   PROD = data.productos || [];
@@ -1835,16 +1846,13 @@ async function loadProductos(){
   const hoy = isoDate(new Date());
   const mov = (await apiGet("movProductos",{desde:hoy,hasta:hoy})).movimientos || [];
   renderProdHoy(mov);
-  const d = new Date(); const ini = isoDate(new Date(d.getFullYear(), d.getMonth(), 1));
-  const mes = (await apiGet("movProductos",{desde:ini,hasta:hoy})).movimientos || [];
-  let hist = null;
-  try{ hist = (await apiGet("historico",{desde:ini,hasta:hoy})).dias || null; }catch(e){}
-  renderProdMes(mes, hist);
 }
 function renderProdVenta(){
   const box = document.getElementById("prodVenta");
+  renderFiltroCaja("prodVentaFiltro", prodVentaCat, c=>{ prodVentaCat=c; renderProdVenta(); });
   if(!PROD.length){ box.innerHTML = '<div class="empty">Sin productos. Ejecuta activarProductos en Apps Script.</div>'; return; }
-  box.innerHTML = PROD.map((p,i)=>{
+  const filas = PROD.map((p,i)=>({p,i})).filter(x=>(x.p.categoria||"Otro")===prodVentaCat);
+  box.innerHTML = filas.length ? filas.map(({p,i})=>{
     const sinPrecio = !(Number(p.precio)>0);
     const q = prodQtyMap[i]||0;
     return `<div class="list-row">
@@ -1854,7 +1862,7 @@ function renderProdVenta(){
         <b style="min-width:18px;text-align:center;">${q}</b>
         <button class="secondary" style="width:38px;margin:0;padding:6px 0;" ${sinPrecio?"disabled":""} onclick="prodQty(${i},1)">+</button>
       </span></div>`;
-  }).join("");
+  }).join("") : '<div class="empty">No hay productos en esta caja</div>';
   actualizarTotalProd();
 }
 function prodQty(i,d){ prodQtyMap[i] = Math.max(0,(prodQtyMap[i]||0)+d); renderProdVenta(); }
@@ -1897,34 +1905,9 @@ function renderProdExistencias(){
 }
 function renderProdCatalogo(){
   const box = document.getElementById("prodCatalogo"); if(!box) return;
-  const g = porCaja(PROD.map((p,i)=>Object.assign({_i:i},p)), p=>p.categoria||"Otro");
-  box.innerHTML = Object.keys(g).map(c=>`<div class="cat-group">${escH(c)}</div>`+g[c].map(p=>`<div class="list-row"><span>${escH(p.nombre)}<br><span style="color:var(--ink-soft);font-weight:700;">Venta ${Number(p.precio)>0?moneyP(p.precio):"—"} · Costo ${Number(p.costo)>0?moneyP(p.costo):"—"}${p.pzasCaja?` · Caja ${p.pzasCaja}`:""}</span></span><button class="secondary" style="width:auto;margin:0;padding:7px 12px;" onclick="abrirProducto(${p._i})">✏️</button></div>`).join("")).join("");
-}
-function renderProdMes(mov, hist){
-  const box = document.getElementById("prodMes"); if(!box) return;
-  const g = porCaja(mov.filter(m=>m.tipo==="Venta"||m.tipo==="Compra"), catDe);
-  const cats = ["Bebidas","Aromatizantes"].concat(Object.keys(g).filter(c=>c!=="Bebidas"&&c!=="Aromatizantes"));
-  let sinCosto=false, html="";
-  if(hist){
-    const ing=hist.reduce((a,d)=>a+(d.ingresos||0),0), gas=hist.reduce((a,d)=>a+(d.gastos||0),0);
-    html += `<div class="cat-group">Caja Autolavado (servicios)</div>
-      <div class="list-row"><span>Ingresos</span><b>${moneyP(ing)}</b></div>
-      <div class="list-row"><span>Gastos (incluye sueldos)</span><b>${moneyP(gas)}</b></div>
-      <div class="list-row"><span><b>Utilidad</b></span><b>${moneyP(ing-gas)}</b></div>`;
-  }
-  html += cats.map(c=>{
-    const l=g[c]||[], v=l.filter(m=>m.tipo==="Venta"), co=l.filter(m=>m.tipo==="Compra");
-    const ventas=v.reduce((a,m)=>a+m.total,0), ef=v.filter(m=>m.pago==="Efectivo").reduce((a,m)=>a+m.total,0);
-    const costoV=v.reduce((a,m)=>a+m.cantidad*(m.costo||0),0), compras=co.reduce((a,m)=>a+m.total,0);
-    if(v.some(m=>!(m.costo>0))) sinCosto=true;
-    return `<div class="cat-group">Caja ${escH(c)}</div>
-      <div class="list-row"><span>Ventas</span><b>${moneyP(ventas)}</b></div>
-      <div class="list-row"><span>   💵 Efectivo · 💳 Tarjeta</span><span>${moneyP(ef)} · ${moneyP(ventas-ef)}</span></div>
-      <div class="list-row"><span>Compras</span><b>${moneyP(compras)}</b></div>
-      <div class="list-row"><span><b>Saldo (ventas − compras)</b></span><b>${moneyP(ventas-compras)}</b></div>
-      <div class="list-row"><span>Utilidad de lo vendido</span><b>${moneyP(ventas-costoV)}</b></div>`;
-  }).join("");
-  box.innerHTML = html + '<div class="hint">Las tres cajas son independientes: lo que entra o sale de una no afecta a las otras.</div>' + (sinCosto?'<div class="hint">Algunas ventas no tienen costo por pieza registrado; ponlo en ✏️ para ver la utilidad real.</div>':"");
+  renderFiltroCaja("prodCatFiltro", prodCatCat, c=>{ prodCatCat=c; renderProdCatalogo(); });
+  const l = PROD.map((p,i)=>({p,i})).filter(x=>(x.p.categoria||"Otro")===prodCatCat);
+  box.innerHTML = l.length ? l.map(({p,i})=>`<div class="list-row"><span>${escH(p.nombre)}<br><span style="color:var(--ink-soft);font-weight:700;">Venta ${Number(p.precio)>0?moneyP(p.precio):"—"} · Costo ${Number(p.costo)>0?moneyP(p.costo):"—"}${p.pzasCaja?` · Caja ${p.pzasCaja}`:""}</span></span><button class="secondary" style="width:auto;margin:0;padding:7px 12px;" onclick="abrirProducto(${i})">✏️</button></div>`).join("") : '<div class="empty">No hay productos en esta caja</div>';
 }
 function llenarSelectsProd(){
   const opts = PROD.map((p,i)=>`<option value="${i}">${escH(p.nombre)}</option>`).join("");
@@ -1967,9 +1950,9 @@ async function guardarAjusteProducto(){
 }
 function abrirProducto(i){
   prodEditIdx = i;
-  const p = i>=0 ? PROD[i] : {nombre:"",categoria:"Aromatizantes",precio:"",costo:"",minimo:0,pzasCaja:""};
+  const p = i>=0 ? PROD[i] : {nombre:"",categoria:prodCatCat,precio:"",costo:"",minimo:0,pzasCaja:""};
   document.getElementById("prodModalTitulo").textContent = i>=0 ? "Editar producto" : "Agregar producto";
-  const nm = document.getElementById("pmNombre"); nm.value = p.nombre; nm.disabled = i>=0;
+  const nm = document.getElementById("pmNombre"); nm.value = p.nombre; nm.disabled = false;
   document.getElementById("pmCategoria").value = p.categoria||"Otro";
   document.getElementById("pmPrecio").value = Number(p.precio)>0 ? p.precio : "";
   document.getElementById("pmCosto").value = Number(p.costo)>0 ? p.costo : "";
@@ -1982,7 +1965,7 @@ async function guardarProductoModal(){
   if(!nombre){ showToast("Escribe el nombre"); return; }
   const d = {categoria:document.getElementById("pmCategoria").value, precio:document.getElementById("pmPrecio").value, costo:document.getElementById("pmCosto").value,
     minimo:document.getElementById("pmMinimo").value, pzasCaja:document.getElementById("pmPzas").value};
-  const r = prodEditIdx>=0 ? await apiPost("updateProducto", Object.assign({producto:PROD[prodEditIdx].nombre}, d))
+  const r = prodEditIdx>=0 ? await apiPost("updateProducto", Object.assign({producto:PROD[prodEditIdx].nombre, nuevoNombre:nombre}, d))
                            : await apiPost("addProducto", Object.assign({nombre}, d));
   if(r && r.error){ showToast(r.error); return; }
   closeModal("modalProducto"); showToast("Producto guardado ✓"); loadProductos();
