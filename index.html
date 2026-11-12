@@ -502,7 +502,7 @@ button.secondary{
       </div>
       <div id="histCharts">
         <div class="card hist-auto"><h3>💵 Ingresos vs gastos</h3><div class="hint" id="histSub1"></div><div class="legend" id="leg1"></div><div id="ch1" class="chart"></div></div>
-        <div class="card hist-auto"><h3>🧾 Detalle de gastos</h3><div class="hint">Lo que registras con "+ Guardar gasto" en el periodo elegido (los sueldos van aparte, por asistencia).</div><div id="histGastos"></div></div>
+        <div class="card hist-auto"><h3>🧾 Detalle de gastos</h3><div class="hint">Lo que registras con "+ Guardar gasto" en el periodo elegido (los sueldos van aparte, por asistencia). Toca ✏️ para corregir o eliminar un gasto.</div><div id="histGastos"></div></div>
         <div class="card hist-auto"><h3>📊 Utilidad</h3><div class="hint">Verde = ganancia · Rojo = pérdida</div><div id="ch2" class="chart"></div><div id="histExtremos" class="hint" style="margin-top:6px;"></div></div>
         <div class="card hist-auto"><h3>⚖️ Contra el periodo anterior</h3><div class="hint" id="histSub3"></div><div class="legend" id="leg3"></div><div id="ch3" class="chart"></div></div>
         <div class="card hist-auto"><h3>🧽 Servicios realizados</h3><div class="legend" id="leg4"></div><div id="ch4" class="chart"></div></div>
@@ -610,6 +610,21 @@ button.secondary{
     <textarea id="whatsTexto" rows="7" style="width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:12px;font-family:inherit;font-size:14px;font-weight:600;resize:vertical;margin-top:8px;"></textarea>
     <a id="whatsEnviar" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-top:16px;padding:13px;border-radius:13px;background:#25D366;color:#fff;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:15.5px;box-shadow:0 4px 10px rgba(37,211,102,0.35);" onclick="setTimeout(()=>closeModal('modalWhats'),400)">📲 Enviar por WhatsApp</a>
     <button class="secondary" onclick="closeModal('modalWhats')">Ahora no</button>
+  </div>
+</div>
+
+<!-- Modal editar gasto -->
+<div class="modal-bg" id="modalGasto">
+  <div class="modal">
+    <button class="close" onclick="closeModal('modalGasto')">×</button>
+    <h3>✏️ Editar gasto</h3>
+    <div class="hint" id="gastoEditFecha"></div>
+    <label>Concepto</label>
+    <input id="geConcepto" type="text">
+    <label>Monto (MXN)</label>
+    <input id="geMonto" type="number" inputmode="decimal">
+    <button class="primary" onclick="guardarEdicionGasto()">Guardar cambios</button>
+    <button class="secondary" id="btnBorrarGasto" style="color:#C01E1E;border-color:#C01E1E;" onclick="borrarGasto()">🗑️ Eliminar este gasto</button>
   </div>
 </div>
 
@@ -867,7 +882,7 @@ function demoGet(action, params){
   if(action==="gastos"){
     const d0 = params.desde ? new Date(params.desde+"T00:00:00") : null;
     const d1 = params.hasta ? new Date(params.hasta+"T23:59:59") : null;
-    return {gastos: demoStore("gastos", []).filter(g=>{ const f=new Date(g["Fecha"]); return !(d0&&f<d0) && !(d1&&f>d1); })};
+    return {gastos: demoStore("gastos", []).map((g,i)=>Object.assign({_row:i+2},g)).filter(g=>{ const f=new Date(g["Fecha"]); return !(d0&&f<d0) && !(d1&&f>d1); })};
   }
   if(action==="personal") return {personal: demoStore("personal", DEMO.personal)};
   if(action==="clientes") return {clientes: demoStore("clientes", [])};
@@ -936,6 +951,13 @@ function demoGet(action, params){
   return {};
 }
 function demoPost(action, payload){
+  if(action==="updateGasto"||action==="deleteGasto"){
+    const all = demoStore("gastos", []); const g = all[payload.row-2];
+    if(!g || String(g["Concepto"]).trim()!==String(payload.conceptoActual).trim() || Number(g["Monto"])!==Number(payload.montoActual)) return {error:"Ese gasto cambió. Actualiza la pantalla e inténtalo de nuevo."};
+    if(action==="deleteGasto") all.splice(payload.row-2,1);
+    else { g["Concepto"]=payload.concepto; g["Monto"]=Number(payload.monto); }
+    demoSave("gastos", all); return {ok:true};
+  }
   if(_DEMO_PROD_POST.includes(action)) return demoProdPost(action, payload);
   if(action==="addRegistro"){
     if(payload.tipoSelloCanje==="Canje" && esFinDeSemana()) return {error:"El canje de promo solo aplica de lunes a viernes"};
@@ -2357,11 +2379,41 @@ function renderHistProductos(caja, MA, MP, B, por, nomPeriodo){
     compras.map(m=>{ const f=new Date(m.fecha); return `<div class="list-row neg-row"><span>${DIAS_S[f.getDay()]} ${f.getDate()}/${f.getMonth()+1} · ${escH(m.producto)} · ${m.cantidad} pza${m.cantidad>1?"s":""}</span><span>-${money(m.total)}</span></div>`; }).join("");
 }
 const escH = s => String(s==null?"":s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---- editar / borrar gasto (Admin) ---- */
+let gastoEditando = null, gastoBorrarListo = false;
+function abrirGasto(i){
+  const g = (window.histGastosLista||[])[i]; if(!g) return;
+  gastoEditando = g; gastoBorrarListo = false;
+  document.getElementById("geConcepto").value = g.c;
+  document.getElementById("geMonto").value = g.m;
+  document.getElementById("gastoEditFecha").textContent = g.f && !isNaN(g.f) ? `Registrado el ${DIAS_S[g.f.getDay()]} ${g.f.getDate()}/${g.f.getMonth()+1}` : "";
+  const b = document.getElementById("btnBorrarGasto"); b.textContent = "🗑️ Eliminar este gasto";
+  openModal("modalGasto");
+}
+async function guardarEdicionGasto(){
+  const g = gastoEditando; if(!g) return;
+  const concepto = document.getElementById("geConcepto").value.trim(), monto = Number(document.getElementById("geMonto").value);
+  if(!concepto){ showToast("Escribe el concepto"); return; }
+  if(!(monto>=0) || document.getElementById("geMonto").value===""){ showToast("Escribe el monto"); return; }
+  const r = await apiPost("updateGasto",{row:g.row, conceptoActual:g.c, montoActual:g.m, concepto, monto});
+  if(r && r.error){ showToast(r.error); return; }
+  closeModal("modalGasto"); showToast("Gasto actualizado ✓"); loadHistoricos();
+}
+async function borrarGasto(){
+  const g = gastoEditando; if(!g) return;
+  const b = document.getElementById("btnBorrarGasto");
+  if(!gastoBorrarListo){ gastoBorrarListo = true; b.textContent = "⚠️ ¿Seguro? Toca otra vez para eliminar"; return; }
+  const r = await apiPost("deleteGasto",{row:g.row, conceptoActual:g.c, montoActual:g.m});
+  if(r && r.error){ showToast(r.error); return; }
+  closeModal("modalGasto"); showToast("Gasto eliminado ✓"); loadHistoricos();
+}
 function renderDetalleGastos(lista){
   const box = document.getElementById("histGastos");
   if(!lista.length){ box.innerHTML = '<div class="empty">No hay gastos registrados en este periodo.</div>'; return; }
-  const gs = lista.map(g=>({f:new Date(g["Fecha"]), c:String(g["Concepto"]||"").trim(), m:Number(g["Monto"])||0}))
+  const gs = lista.map(g=>({f:new Date(g["Fecha"]), c:String(g["Concepto"]||"").trim(), m:Number(g["Monto"])||0, row:g["_row"]}))
                   .sort((a,b)=>b.f-a.f);
+  window.histGastosLista = gs;
   const total = gs.reduce((t,g)=>t+g.m,0);
   const por = {};
   gs.forEach(g=>{ const k = (g.c||"Sin concepto").toLowerCase(); (por[k] = por[k] || {n:g.c||"Sin concepto", m:0, q:0}); por[k].m += g.m; por[k].q++; });
@@ -2372,7 +2424,7 @@ function renderDetalleGastos(lista){
     `<div class="cat-group" style="margin-top:10px;">Por concepto</div>` +
     resumen.map(x=>`<div class="list-row neg-row"><span>${escH(x.n)}${x.q>1?" · "+x.q+" veces":""}</span><span>-${money(x.m)}</span></div>`).join("") +
     `<div class="cat-group" style="margin-top:10px;">Cada gasto</div>` +
-    gs.map(g=>`<div class="list-row neg-row"><span>${fecha(g.f)} · ${escH(g.c)}</span><span>-${money(g.m)}</span></div>`).join("");
+    gs.map((g,i)=>`<div class="list-row neg-row"><span>${fecha(g.f)} · ${escH(g.c)}</span><span style="display:flex;align-items:center;gap:8px;">-${money(g.m)}${g.row?`<button class="secondary" style="width:auto;margin:0;padding:5px 9px;" onclick="abrirGasto(${i})">✏️</button>`:""}</span></div>`).join("");
 }
 const sum = (arr,k)=>arr.reduce((t,d)=>t+(d[k]||0),0);
 function leyenda(items){ return items.map(([n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join(""); }
