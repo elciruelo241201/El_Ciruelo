@@ -1225,7 +1225,9 @@ async function loadHoy(){
     let serv = String(x["Paquete / Servicio"]||"").trim();
     if(serv==="Variado") serv = String(x["Comentarios"]||"").trim() || "Variado";
     else { const m = serv.match(/^Paq\.?\s*#\s*(\d+)/i); if(m) serv = "Paq. #"+m[1]; }
-    const izq = [horaDe(it.t), veh, marca, escH(serv)].filter(Boolean).join(" · ");
+    const tam = String(x["Tamaño"]||"").trim();
+    const vehTam = [veh, (tam && tam!==x["Tipo vehículo"]) ? escH(tam) : ""].filter(Boolean).join(" ");
+    const izq = [horaDe(it.t), vehTam, marca, escH(serv)].filter(Boolean).join(" · ");
     if(tipoS==="Cortesía") return `<div class="list-row neu-row"><span>${izq}</span><span>$0</span></div>`;
     return `<div class="list-row pos-row"><span>${izq}</span><span>+${money(x["Monto cobrado"])}</span></div>`;
   }).join("") : '<div class="empty">Aún no hay registros hoy.</div>';
