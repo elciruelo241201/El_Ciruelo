@@ -522,10 +522,7 @@ button.secondary{
       <div class="hint" id="corteSemanaTxt" style="margin-bottom:6px;"></div>
       <div class="solo-admin"><label>Lunes de la semana</label>
       <input id="corteLunes" type="date"></div>
-      <div class="grid2" style="margin-top:14px;">
-        <div><div class="cat-group">Sábado (Lun–Sáb)</div><div id="corteSabado"></div></div>
-        <div><div class="cat-group">Domingo</div><div id="corteDomingo"></div></div>
-      </div>
+<div id="corteCajas" style="margin-top:6px;"></div>
     </div>
     <div class="card">
       <h3>💰 Nómina del corte</h3>
@@ -2199,12 +2196,14 @@ async function loadCortes(){
   if(ROLE==="admin") loadHistoricos();
   document.getElementById("corteSemanaTxt").textContent = `Semana del ${fmtDate(lunes)} al ${fmtDate(domingo)}`;
 
-  const [rSab, rDom] = await Promise.all([
+  document.getElementById("corteCajas").style.opacity = ".5";
+  const [rSab, rDom, mv] = await Promise.all([
     apiGet("resumen", {desde:isoDate(lunes), hasta:isoDate(sabado)}),
-    apiGet("resumen", {desde:isoDate(domingo), hasta:isoDate(domingo)})
+    apiGet("resumen", {desde:isoDate(domingo), hasta:isoDate(domingo)}),
+    apiGet("movProductos", {desde:isoDate(lunes), hasta:isoDate(domingo)})
   ]);
-  document.getElementById("corteSabado").innerHTML = corteHtml(rSab);
-  document.getElementById("corteDomingo").innerHTML = corteHtml(rDom);
+  document.getElementById("corteCajas").style.opacity = "1";
+  renderCorteCajas(rSab, rDom, mv, isoDate(domingo));
   loadNomina(lunes, sabado, domingo);
 }
 
@@ -2525,6 +2524,57 @@ async function loadNomina(lunes, sabado, domingo){
       <span class="neg-row"><b>${money((s.total||0)+(d.total||0))}</b></span>
     </div>`;
   }).join("");
+}
+
+/* Corte semanal por cajas: Autolavado, Bebidas, Aromatizantes y la suma de las 3 (cada caja va por separado). */
+function cajaProdCorte(movs, caja, domKey){
+  const cat = m => m.categoria || (typeof PROD!=="undefined" && (PROD.find(p=>p.nombre===m.producto)||{}).categoria) || "Otro";
+  const f = (lista)=>{ const v=lista.filter(m=>m.tipo==="Venta"), c=lista.filter(m=>m.tipo==="Compra");
+    const ven=v.reduce((a,m)=>a+m.total,0), ef=v.filter(m=>m.pago==="Efectivo").reduce((a,m)=>a+m.total,0), com=c.reduce((a,m)=>a+m.total,0);
+    return {ef, tj:ven-ef, ven, com, saldo:ven-com}; };
+  const mine = movs.filter(m=>cat(m)===caja);
+  const dom = mine.filter(m=>isoDate(new Date(m.fecha))===domKey), sab = mine.filter(m=>isoDate(new Date(m.fecha))!==domKey);
+  return {sab:f(sab), dom:f(dom)};
+}
+function corteProdHtml(c){
+  const esAdm = ROLE==="admin";
+  return `<div class="list-row pos-row"><span>Efectivo</span><span>${money(c.ef)}</span></div>
+    <div class="list-row pos-row"><span>Tarjeta</span><span>${money(c.tj)}</span></div>
+    <div class="list-row pos-row"><b>Ventas</b><b>${money(c.ven)}</b></div>` +
+    (esAdm ? `<div class="list-row neg-row"><span>Compras</span><span>${money(c.com)}</span></div>
+    <div class="list-row ${c.saldo<0?"neg-row":"pos-row"}"><b>Saldo</b><b>${money(c.saldo)}</b></div>` : "");
+}
+function renderCorteCajas(rSab, rDom, mv, domKey){
+  const esAdm = ROLE==="admin";
+  const box = document.getElementById("corteCajas");
+  const seccion = (titulo, izq, der)=>`<div class="cat-group" style="font-size:13px;margin-top:18px;padding-bottom:4px;border-bottom:2px solid var(--line);">${titulo}</div>
+    <div class="grid2"><div><div class="cat-group">Lun–Sáb</div>${izq}</div><div><div class="cat-group">Domingo</div>${der}</div></div>`;
+  let html = seccion("🧽 Autolavado", corteHtml(rSab), corteHtml(rDom));
+  const ok = mv && Array.isArray(mv.movimientos);
+  const bS = ok ? cajaProdCorte(mv.movimientos,"Bebidas",domKey) : null, aS = ok ? cajaProdCorte(mv.movimientos,"Aromatizantes",domKey) : null;
+  if(ok){
+    html += seccion("🍺 Bebidas", corteProdHtml(bS.sab), corteProdHtml(bS.dom));
+    html += seccion("🌸 Aromatizantes", corteProdHtml(aS.sab), corteProdHtml(aS.dom));
+  } else {
+    html += '<div class="hint" style="margin-top:14px;">Para ver Bebidas y Aromatizantes, actualiza Code.gs y ejecuta activarProductos.</div>';
+  }
+  const suma = (r, b, a)=>{
+    const ef = (r.ingresosEfectivo||0) + (ok?b.ef+a.ef:0), tj = (r.ingresosTarjeta||0) + (ok?b.tj+a.tj:0);
+    const entradas = ef + tj;
+    let h = `<div class="list-row pos-row"><span>Efectivo</span><span>${money(ef)}</span></div>
+      <div class="list-row pos-row"><span>Tarjeta</span><span>${money(tj)}</span></div>
+      <div class="list-row pos-row"><b>Entradas</b><b>${money(entradas)}</b></div>`;
+    if(esAdm){
+      const salidas = (r.gastosTotal||0) + (ok?b.com+a.com:0);
+      const res = entradas - salidas;
+      h += `<div class="list-row neg-row"><span>Salidas</span><span>${money(salidas)}</span></div>
+        <div class="list-row ${res<0?"neg-row":"pos-row"}"><b>Resultado</b><b>${money(res)}</b></div>`;
+    }
+    return h;
+  };
+  html += seccion("➕ Suma de las 3 cajas", suma(rSab, ok?bS.sab:null, ok?aS.sab:null), suma(rDom, ok?bS.dom:null, ok?aS.dom:null));
+  if(esAdm) html += '<div class="hint" style="margin-top:8px;">Salidas = gastos del Autolavado (con sueldos) + compras de productos. Resultado = entradas − salidas.</div>';
+  box.innerHTML = html;
 }
 function corteHtml(r){
   // Usuario: Gastos = solo sueldos (los gastos del Administrador no se muestran)
