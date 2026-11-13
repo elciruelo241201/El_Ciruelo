@@ -2558,22 +2558,17 @@ function renderCorteCajas(rSab, rDom, mv, domKey){
   } else {
     html += '<div class="hint" style="margin-top:14px;">Para ver Bebidas y Aromatizantes, actualiza Code.gs y ejecuta activarProductos.</div>';
   }
+  // Una sola línea: Administrador = utilidad de las 3 cajas (utilidad Autolavado + saldo Bebidas + saldo Aromatizantes); Usuario = entradas de las 3 cajas.
   const suma = (r, b, a)=>{
-    const ef = (r.ingresosEfectivo||0) + (ok?b.ef+a.ef:0), tj = (r.ingresosTarjeta||0) + (ok?b.tj+a.tj:0);
-    const entradas = ef + tj;
-    let h = `<div class="list-row pos-row"><span>Efectivo</span><span>${money(ef)}</span></div>
-      <div class="list-row pos-row"><span>Tarjeta</span><span>${money(tj)}</span></div>
-      <div class="list-row pos-row"><b>Entradas</b><b>${money(entradas)}</b></div>`;
     if(esAdm){
-      const salidas = (r.gastosTotal||0) + (ok?b.com+a.com:0);
-      const res = entradas - salidas;
-      h += `<div class="list-row neg-row"><span>Salidas</span><span>${money(salidas)}</span></div>
-        <div class="list-row ${res<0?"neg-row":"pos-row"}"><b>Resultado</b><b>${money(res)}</b></div>`;
+      const util = ((r.ingresosTotal||0) - (r.gastosTotal||0)) + (ok ? b.saldo + a.saldo : 0);
+      return `<div class="list-row ${util<0?"neg-row":"pos-row"}"><b>Utilidad total</b><b>${money(util)}</b></div>`;
     }
-    return h;
+    const ent = (r.ingresosTotal||0) + (ok ? b.ven + a.ven : 0);
+    return `<div class="list-row pos-row"><b>Entradas totales</b><b>${money(ent)}</b></div>`;
   };
   html += seccion("➕ Suma de las 3 cajas", suma(rSab, ok?bS.sab:null, ok?aS.sab:null), suma(rDom, ok?bS.dom:null, ok?aS.dom:null));
-  if(esAdm) html += '<div class="hint" style="margin-top:8px;">Salidas = gastos del Autolavado (con sueldos) + compras de productos. Resultado = entradas − salidas.</div>';
+  if(esAdm) html += '<div class="hint" style="margin-top:8px;">Utilidad total = utilidad del Autolavado + saldo de Bebidas + saldo de Aromatizantes (ventas − compras).</div>';
   box.innerHTML = html;
 }
 function corteHtml(r){
