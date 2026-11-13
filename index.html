@@ -1219,12 +1219,15 @@ async function loadHoy(){
       return `<div class="list-row neg-row"><span>${horaDe(it.t)} · 👷 ${it.x["Empleado"]} laboró</span><span>-${money(it.costo)}</span></div>`;
     }
     const x = it.x;
-    const extra = x["Comentarios"] ? ` · ${x["Comentarios"]}` : "";
-    if(x["Tipo (Sello/Canje)"]==="Cortesía"){
-      return `<div class="list-row neu-row"><span>${horaDe(it.t)} · 🤝 Cortesía · ${x["Placa"]||"s/placa"} · ${x["Paquete / Servicio"]||""}${x["Nombre"]?" · "+x["Nombre"]:""}${extra}</span><span>$0</span></div>`;
-    }
-    const etiqCanje = x["Tipo (Sello/Canje)"]==="Canje" ? "🎁 Canje · " : (x["Tipo (Sello/Canje)"]==="Sin sello" ? "🚫 Sin sello · " : "");
-    return `<div class="list-row pos-row"><span>${horaDe(it.t)} · ${etiqCanje}${x["Placa"]||"s/placa"} · ${x["Paquete / Servicio"]||""}${extra}</span><span>+${money(x["Monto cobrado"])}</span></div>`;
+    const veh = {Moto:"🏍️", Coche:"🚗", Camioneta:"🛻", Bici:"🚲"}[x["Tipo vehículo"]] || "";
+    const tipoS = x["Tipo (Sello/Canje)"];
+    const marca = tipoS==="Cortesía" ? "🤝" : tipoS==="Canje" ? "🎁" : tipoS==="Sin sello" ? "🚫" : "";
+    let serv = String(x["Paquete / Servicio"]||"").trim();
+    if(serv==="Variado") serv = String(x["Comentarios"]||"").trim() || "Variado";
+    else { const m = serv.match(/^Paq\.?\s*#\s*(\d+)/i); if(m) serv = "Paq. #"+m[1]; }
+    const izq = [horaDe(it.t), veh, marca, escH(serv)].filter(Boolean).join(" · ");
+    if(tipoS==="Cortesía") return `<div class="list-row neu-row"><span>${izq}</span><span>$0</span></div>`;
+    return `<div class="list-row pos-row"><span>${izq}</span><span>+${money(x["Monto cobrado"])}</span></div>`;
   }).join("") : '<div class="empty">Aún no hay registros hoy.</div>';
 
   const box = document.getElementById("hoyAsistencia");
