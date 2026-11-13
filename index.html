@@ -610,6 +610,18 @@ button.secondary{
   </div>
 </div>
 
+<!-- Modal fotos del registro -->
+<div class="modal-bg" id="modalFotos">
+  <div class="modal">
+    <button class="close" onclick="closeModal('modalFotos')">×</button>
+    <h3 id="fotosTitulo">📷 Fotos</h3>
+    <div class="cat-group">Esta visita</div>
+    <div id="fotoActual"></div>
+    <div class="cat-group">Visita anterior del mismo vehículo</div>
+    <div id="fotoAnterior"></div>
+  </div>
+</div>
+
 <!-- Modal editar gasto -->
 <div class="modal-bg" id="modalGasto">
   <div class="modal">
@@ -1208,7 +1220,8 @@ async function loadHoy(){
   }
   items.sort((a,b)=> (b.t||0)-(a.t||0));
   const horaDe = t => isNaN(t) ? "" : t.toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"});
-  document.getElementById("hoyRegistros").innerHTML = items.length ? items.map(it=>{
+  window.hoyItems = items;
+  document.getElementById("hoyRegistros").innerHTML = items.length ? items.map((it,idx)=>{
     if(it.tipo==="gasto"){
       return `<div class="list-row neg-row"><span>${horaDe(it.t)} · 🧾 Gasto · ${it.x["Concepto"]||""}</span><span>-${money(it.x["Monto"])}</span></div>`;
     }
@@ -1225,8 +1238,9 @@ async function loadHoy(){
     const tam = String(x["Tamaño"]||"").trim();
     const vehTam = [veh, (tam && tam!==x["Tipo vehículo"]) ? escH(tam) : ""].filter(Boolean).join(" ");
     const izq = [horaDe(it.t), vehTam, marca, escH(serv)].filter(Boolean).join(" · ");
-    if(tipoS==="Cortesía") return `<div class="list-row neu-row"><span>${izq}</span><span>$0</span></div>`;
-    return `<div class="list-row pos-row"><span>${izq}</span><span>+${money(x["Monto cobrado"])}</span></div>`;
+    const cam = (esAdm && x["Foto (link)"]) ? `<button class="secondary" style="width:auto;margin:0 0 0 8px;padding:4px 8px;" onclick="verFotos(${idx})">📷</button>` : "";
+    if(tipoS==="Cortesía") return `<div class="list-row neu-row"><span>${izq}</span><span>$0${cam}</span></div>`;
+    return `<div class="list-row pos-row"><span>${izq}</span><span>+${money(x["Monto cobrado"])}${cam}</span></div>`;
   }).join("") : '<div class="empty">Aún no hay registros hoy.</div>';
 
   const box = document.getElementById("hoyAsistencia");
@@ -2384,6 +2398,39 @@ function renderHistProductos(caja, MA, MP, B, por, nomPeriodo){
 }
 const escH = s => String(s==null?"":s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
+
+/* ---- fotos de un registro y de la visita anterior (Admin) ---- */
+function fotoSrc(link){
+  link = String(link||"");
+  if(link.startsWith("data:")) return link;
+  const m = link.match(/\/d\/([\w-]+)/) || link.match(/[?&]id=([\w-]+)/);
+  return m ? "https://drive.google.com/thumbnail?id="+m[1]+"&sz=w1000" : link;
+}
+function fotoHtml(x){
+  if(!x) return '<div class="empty">No hay una visita anterior con foto.</div>';
+  const f = new Date(x["Fecha y hora"]);
+  const cap = `${DIAS_S[f.getDay()]} ${f.getDate()}/${f.getMonth()+1}/${f.getFullYear()} · ${f.toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"})}${x["Paquete / Servicio"]?" · "+escH(x["Paquete / Servicio"]):""}`;
+  const link = String(x["Foto (link)"]);
+  return `<img src="${fotoSrc(link)}" alt="Foto" style="width:100%;border-radius:12px;border:2px solid var(--line);display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+    <div class="hint" style="display:none;">No se pudo mostrar la foto aquí. ${link.startsWith("http")?`<a href="${escH(link)}" target="_blank" rel="noopener">Abrir en Drive</a>`:""}</div>
+    <div class="hint" style="margin-top:6px;">${cap}${link.startsWith("http")?` · <a href="${escH(link)}" target="_blank" rel="noopener">Abrir en Drive</a>`:""}</div>`;
+}
+async function verFotos(idx){
+  const it = (window.hoyItems||[])[idx]; if(!it) return;
+  const x = it.x, placa = String(x["Placa"]||"").trim().toUpperCase();
+  document.getElementById("fotosTitulo").textContent = "📷 Fotos" + (placa ? " · " + placa : "");
+  document.getElementById("fotoActual").innerHTML = fotoHtml(x);
+  const ant = document.getElementById("fotoAnterior");
+  ant.innerHTML = '<div class="empty">Buscando…</div>';
+  openModal("modalFotos");
+  if(!placa){ ant.innerHTML = '<div class="empty">Este registro no tiene placa.</div>'; return; }
+  const hoy = new Date(); const d0 = new Date(hoy); d0.setDate(d0.getDate()-400);
+  const r = await apiGet("registro", {desde:isoDate(d0), hasta:isoDate(hoy)});
+  const t0 = new Date(x["Fecha y hora"]).getTime();
+  const prev = (r.registro||[]).filter(y=>String(y["Placa"]||"").trim().toUpperCase()===placa && y["Foto (link)"] && new Date(y["Fecha y hora"]).getTime()<t0)
+    .sort((a,b)=>new Date(b["Fecha y hora"])-new Date(a["Fecha y hora"]))[0];
+  ant.innerHTML = fotoHtml(prev);
+}
 /* ---- editar / borrar gasto (Admin) ---- */
 let gastoEditando = null, gastoBorrarListo = false;
 function abrirGasto(i){
