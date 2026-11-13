@@ -2562,13 +2562,13 @@ function renderCorteCajas(rSab, rDom, mv, domKey){
   const suma = (r, b, a)=>{
     if(esAdm){
       const util = ((r.ingresosTotal||0) - (r.gastosTotal||0)) + (ok ? b.saldo + a.saldo : 0);
-      return `<div class="list-row ${util<0?"neg-row":"pos-row"}"><b>Utilidad total</b><b>${money(util)}</b></div>`;
+      return `<div class="list-row ${util<0?"neg-row":"pos-row"}"><b>Total</b><b>${money(util)}</b></div>`;
     }
-    const ent = (r.ingresosTotal||0) + (ok ? b.ven + a.ven : 0);
-    return `<div class="list-row pos-row"><b>Entradas totales</b><b>${money(ent)}</b></div>`;
+    const ut = ((r.ingresosTotal||0) - (r.sueldosTotal||0)) + (ok ? b.ven + a.ven : 0);
+    return `<div class="list-row ${ut<0?"neg-row":"pos-row"}"><b>Total</b><b>${money(ut)}</b></div>`;
   };
   html += seccion("➕ Suma de las 3 cajas", suma(rSab, ok?bS.sab:null, ok?aS.sab:null), suma(rDom, ok?bS.dom:null, ok?aS.dom:null));
-  if(esAdm) html += '<div class="hint" style="margin-top:8px;">Utilidad total = utilidad del Autolavado + saldo de Bebidas + saldo de Aromatizantes (ventas − compras).</div>';
+  html += esAdm ? '<div class="hint" style="margin-top:8px;">Total = utilidad del Autolavado + saldo de Bebidas + saldo de Aromatizantes (ventas − compras).</div>' : '<div class="hint" style="margin-top:8px;">Total = utilidad del Autolavado + ventas de Bebidas + ventas de Aromatizantes.</div>';
   box.innerHTML = html;
 }
 function corteHtml(r){
