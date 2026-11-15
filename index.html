@@ -448,9 +448,19 @@ button.secondary{
       <div id="prodCatalogo"></div>
       <button class="secondary" onclick="abrirProducto(-1)">+ Agregar producto</button>
     </div>
+    <div class="card solo-admin">
+      <h3>🧾 Movimientos de productos</h3>
+      <div class="hint">Ventas, compras y ajustes. Toca ✏️ para corregir o eliminar uno.</div>
+      <div class="chips" id="movPeriodoChips">
+        <div class="chip sel" data-v="1">Hoy</div>
+        <div class="chip" data-v="7">7 días</div>
+        <div class="chip" data-v="30">30 días</div>
+      </div>
+      <div id="movAdminLista"><div class="empty">Cargando…</div></div>
+    </div>
   </div>
 
-  <!-- ===================== CATALOGO ===================== -->
+  <!-- ===================== CATALOGO ===================== --> -->
   <div class="view" id="view-catalogo">
     <div class="card">
       <h3>💲 Tarifas 2026</h3>
@@ -619,6 +629,25 @@ button.secondary{
     <div id="fotoActual"></div>
     <div class="cat-group">Visita anterior del mismo vehículo</div>
     <div id="fotoAnterior"></div>
+  </div>
+</div>
+
+<!-- Modal movimiento de producto -->
+<div class="modal-bg" id="modalMovProd">
+  <div class="modal">
+    <button class="close" onclick="closeModal('modalMovProd')">×</button>
+    <h3 id="mpTitulo">Movimiento</h3>
+    <div class="hint" id="mpInfo"></div>
+    <label id="mpLblCant">Cantidad (piezas)</label>
+    <input id="mpCantidad" type="number" inputmode="numeric">
+    <div id="mpBoxPago"><label>Forma de pago</label>
+      <select id="mpPago"><option>Efectivo</option><option>Tarjeta</option></select></div>
+    <div id="mpBoxTotal"><label>Costo total pagado (MXN)</label>
+      <input id="mpTotal" type="number" inputmode="decimal"></div>
+    <div id="mpBoxMotivo"><label>Motivo</label>
+      <input id="mpMotivo" type="text"></div>
+    <button class="primary" onclick="guardarMovProd()">Guardar cambios</button>
+    <button class="secondary" id="btnBorrarMovProd" style="color:#C01E1E;border-color:#C01E1E;" onclick="borrarMovProd()">🗑️ Eliminar este movimiento</button>
   </div>
 </div>
 
@@ -822,12 +851,22 @@ function demoProdGet(action, params){
     })};
   }
   const d0=params.desde, d1=params.hasta;
-  return {movimientos: mov.filter(m=>{ const k=isoDate(new Date(m.fecha)); return k>=d0 && k<=d1; })};
+  return {movimientos: mov.map((m,i)=>Object.assign({row:i+2},m)).filter(m=>{ const k=isoDate(new Date(m.fecha)); return k>=d0 && k<=d1; })};
 }
 function demoProdPost(action, p){
   const prods = demoStore("productos", DEMO_PROD), mov = demoStore("movprod", []);
   const find = n => prods.find(x=>x.nombre.toLowerCase()===String(n).toLowerCase());
   const now = new Date().toISOString();
+  if(action==="updateMovProducto"||action==="deleteMovProducto"){
+    const m = mov[p.row-2];
+    if(!m || m.producto!==p.productoActual || m.tipo!==p.tipoActual || Number(m.cantidad)!==Number(p.cantidadActual)) return {error:"Ese movimiento cambió. Actualiza la pantalla e inténtalo de nuevo."};
+    if(action==="deleteMovProducto") mov.splice(p.row-2,1);
+    else if(m.tipo==="Venta"){ m.cantidad=Number(p.cantidad); m.total=m.cantidad*(m.precio||0); m.pago=p.pago; }
+    else if(m.tipo==="Compra"){ m.cantidad=Number(p.cantidad); m.total=Number(p.total); m.costo=m.total/m.cantidad; }
+    else { m.cantidad=Number(p.cantidad); m.comentario=p.motivo; }
+    if(m.tipo==="Compra"||action==="deleteMovProducto"){ const pr=find(p.productoActual); const cs=mov.filter(x=>x.producto===p.productoActual&&x.tipo==="Compra"&&x.costo>0); if(pr&&cs.length){ pr.costo=cs[cs.length-1].costo; demoSave("productos",prods);} }
+    demoSave("movprod",mov); return {ok:true};
+  }
   if(action==="ventaProductos"){
     let total=0; const rows=[];
     for(const it of p.items){
@@ -863,7 +902,7 @@ function demoProdPost(action, p){
     demoSave("productos",prods); return {ok:true};
   }
 }
-const _DEMO_PROD_GET = ["productos","movProductos"], _DEMO_PROD_POST = ["ventaProductos","compraProducto","ajusteProducto","updateProducto","addProducto"];
+const _DEMO_PROD_GET = ["productos","movProductos"], _DEMO_PROD_POST = ["updateMovProducto","deleteMovProducto","ventaProductos","compraProducto","ajusteProducto","updateProducto","addProducto"];
 
 function demoGet(action, params){
   if(_DEMO_PROD_GET.includes(action)) return demoProdGet(action, params);
@@ -1884,6 +1923,7 @@ async function loadProductos(){
   const hoy = isoDate(new Date());
   const mov = (await apiGet("movProductos",{desde:hoy,hasta:hoy})).movimientos || [];
   renderProdHoy(mov);
+  if(typeof ROLE!=="undefined" && ROLE==="admin") loadMovAdmin();
 }
 function renderProdVenta(){
   const box = document.getElementById("prodVenta");
@@ -2399,6 +2439,61 @@ function renderHistProductos(caja, MA, MP, B, por, nomPeriodo){
 const escH = s => String(s==null?"":s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 
+
+/* ---- corregir / borrar movimientos de productos (Admin) ---- */
+let movAdminLista = [], movEditando = null, movBorrarListo = false;
+setupChips("movPeriodoChips", ()=>loadMovAdmin());
+async function loadMovAdmin(){
+  const box = document.getElementById("movAdminLista"); if(!box) return;
+  const dias = Number(chipVal("movPeriodoChips"))||1;
+  const hoy = new Date(), d0 = new Date(hoy); d0.setDate(d0.getDate()-(dias-1));
+  const r = await apiGet("movProductos",{desde:isoDate(d0),hasta:isoDate(hoy)});
+  if(!r || !Array.isArray(r.movimientos)){ box.innerHTML = '<div class="empty">Actualiza Code.gs para ver los movimientos.</div>'; return; }
+  movAdminLista = r.movimientos.slice().sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).slice(0,80);
+  if(!movAdminLista.length){ box.innerHTML = '<div class="empty">No hay movimientos en este periodo.</div>'; return; }
+  const ico = {Venta:"🛒", Compra:"📥", Ajuste:"⚖️"};
+  box.innerHTML = movAdminLista.map((m,i)=>{
+    const f = new Date(m.fecha);
+    const monto = m.tipo==="Venta" ? "+"+moneyP(m.total) : m.tipo==="Compra" ? "-"+moneyP(m.total) : "";
+    const cls = m.tipo==="Venta" ? "pos-row" : m.tipo==="Compra" ? "neg-row" : "neu-row";
+    const cant = m.tipo==="Ajuste" ? (m.cantidad>0?"+":"")+m.cantidad : m.cantidad;
+    return `<div class="list-row ${cls}"><span>${DIAS_S[f.getDay()]} ${f.getDate()}/${f.getMonth()+1} · ${ico[m.tipo]||""} ${cant} × ${escH(m.producto)}${m.tipo==="Venta"&&m.pago?` <span style="color:var(--ink-soft);">(${escH(m.pago)})</span>`:""}</span><span style="display:flex;align-items:center;gap:8px;">${monto}${m.row?`<button class="secondary" style="width:auto;margin:0;padding:5px 9px;" onclick="abrirMovProd(${i})">✏️</button>`:""}</span></div>`;
+  }).join("");
+}
+function abrirMovProd(i){
+  const m = movAdminLista[i]; if(!m) return;
+  movEditando = m; movBorrarListo = false;
+  document.getElementById("mpTitulo").textContent = (m.tipo==="Venta"?"🛒 Venta":m.tipo==="Compra"?"📥 Compra":"⚖️ Ajuste");
+  const f = new Date(m.fecha);
+  document.getElementById("mpInfo").textContent = `${m.producto} · ${DIAS_S[f.getDay()]} ${f.getDate()}/${f.getMonth()+1} · ${f.toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"})}`;
+  document.getElementById("mpLblCant").textContent = m.tipo==="Ajuste" ? "Cantidad (+ o −)" : "Cantidad (piezas)";
+  document.getElementById("mpCantidad").value = m.cantidad;
+  document.getElementById("mpBoxPago").style.display = m.tipo==="Venta" ? "block" : "none";
+  document.getElementById("mpPago").value = m.pago==="Tarjeta" ? "Tarjeta" : "Efectivo";
+  document.getElementById("mpBoxTotal").style.display = m.tipo==="Compra" ? "block" : "none";
+  document.getElementById("mpTotal").value = m.total;
+  document.getElementById("mpBoxMotivo").style.display = m.tipo==="Ajuste" ? "block" : "none";
+  document.getElementById("mpMotivo").value = m.comentario || "";
+  document.getElementById("btnBorrarMovProd").textContent = "🗑️ Eliminar este movimiento";
+  openModal("modalMovProd");
+}
+async function guardarMovProd(){
+  const m = movEditando; if(!m) return;
+  const n = Number(document.getElementById("mpCantidad").value);
+  if(!n || (m.tipo!=="Ajuste" && n<=0)){ showToast("Escribe una cantidad válida"); return; }
+  const r = await apiPost("updateMovProducto",{row:m.row, productoActual:m.producto, tipoActual:m.tipo, cantidadActual:m.cantidad,
+    cantidad:n, pago:document.getElementById("mpPago").value, total:document.getElementById("mpTotal").value, motivo:document.getElementById("mpMotivo").value});
+  if(r && r.error){ showToast(r.error); return; }
+  closeModal("modalMovProd"); showToast("Movimiento actualizado ✓"); loadProductos();
+}
+async function borrarMovProd(){
+  const m = movEditando; if(!m) return;
+  const b = document.getElementById("btnBorrarMovProd");
+  if(!movBorrarListo){ movBorrarListo = true; b.textContent = "⚠️ ¿Seguro? Toca otra vez para eliminar"; return; }
+  const r = await apiPost("deleteMovProducto",{row:m.row, productoActual:m.producto, tipoActual:m.tipo, cantidadActual:m.cantidad});
+  if(r && r.error){ showToast(r.error); return; }
+  closeModal("modalMovProd"); showToast("Movimiento eliminado ✓"); loadProductos();
+}
 /* ---- fotos de un registro y de la visita anterior (Admin) ---- */
 function fotoSrc(link){
   link = String(link||"");
