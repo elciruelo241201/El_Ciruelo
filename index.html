@@ -709,16 +709,33 @@ button.secondary{
 <div class="toast" id="toast"></div>
 
 <script>
-/* Aviso de error visible (ayuda a detectar celulares o navegadores viejos) */
-window.onerror = function(msg, url, line){
-  try{
-    var d = document.getElementById("errBanner");
-    if(!d){ d = document.createElement("div"); d.id = "errBanner";
-      d.style.cssText = "position:fixed;left:8px;right:8px;top:8px;z-index:99999;background:#C01E1E;color:#fff;font:600 13px sans-serif;padding:10px 12px;border-radius:10px;";
-      document.body.appendChild(d); }
-    d.textContent = "Error: " + msg + " (línea " + line + ")";
-  }catch(e){}
-};
+/* Compatibilidad con navegadores viejos + aviso de error visible */
+(function(){
+  function mostrar(txt){
+    try{
+      var d = document.getElementById("errBanner");
+      if(!d){ d = document.createElement("div"); d.id = "errBanner";
+        d.style.cssText = "position:fixed;left:8px;right:8px;top:8px;z-index:99999;background:#C01E1E;color:#fff;font:600 13px sans-serif;padding:10px 12px;border-radius:10px;";
+        document.body.appendChild(d); }
+      d.textContent = txt;
+    }catch(e){}
+  }
+  window.onerror = function(msg, url, line){ mostrar("Error: " + msg + " (línea " + line + ")"); };
+  window.addEventListener("unhandledrejection", function(ev){
+    var r = ev && ev.reason; mostrar("Error: " + (r && r.message ? r.message : String(r)));
+  });
+  try{ new Date().toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"}); }catch(e){
+    Date.prototype.toLocaleTimeString = function(){ var h=this.getHours(), m=this.getMinutes(); return (h<10?"0":"")+h+":"+(m<10?"0":"")+m; };
+  }
+  try{ (1234).toLocaleString("es-MX",{maximumFractionDigits:2}); }catch(e){
+    Number.prototype.toLocaleString = function(){ return String(this); };
+  }
+  try{ new Intl.DateTimeFormat("es-MX",{day:"numeric",month:"long"}).format(new Date()); }catch(e){
+    var M=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+    window.Intl = window.Intl || {};
+    window.Intl.DateTimeFormat = function(){ return { format:function(d){ return d.getDate()+" de "+M[d.getMonth()]; } }; };
+  }
+})();
 </script>
 <script>var __defProp = Object.defineProperty;
 var __getOwnPropSymbols = Object.getOwnPropertySymbols;
