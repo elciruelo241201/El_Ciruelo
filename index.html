@@ -235,6 +235,10 @@ button.secondary{
         <div class="stat"><div class="num" id="hBicis">—</div><div class="lab">Bici</div></div>
       </div>
     </div>
+    <div class="card" id="hoyProdCard">
+      <h3>🛒 Productos de hoy</h3>
+      <div id="hoyProd"><div class="empty">Cargando…</div></div>
+    </div>
     <div class="card">
       <h3>👷 Personal de hoy</h3>
       <div id="hoyAsistencia"><div class="empty">Cargando…</div></div>
@@ -460,7 +464,7 @@ button.secondary{
     </div>
   </div>
 
-  <!-- ===================== CATALOGO ===================== --> -->
+  <!-- ===================== CATALOGO ===================== -->
   <div class="view" id="view-catalogo">
     <div class="card">
       <h3>💲 Tarifas 2026</h3>
@@ -1368,6 +1372,38 @@ function applyRole() {
     loadCortes();
   }
 }
+async function renderHoyProductos(today) {
+  const box = document.getElementById("hoyProd");
+  if (!box) return;
+  let mov = [], prods = [];
+  try {
+    mov = ((await apiGet("movProductos", { desde: today, hasta: today })).movimientos || []).filter((m) => m.tipo === "Venta");
+  } catch (e) {
+    mov = [];
+  }
+  try {
+    prods = (await apiGet("productos")).productos || [];
+  } catch (e) {
+    prods = [];
+  }
+  const cajas = [["Bebidas", "🥤", "plum"], ["Aromatizantes", "🌸", ""]];
+  const esCaja = (cat, c) => String(cat || "").toLowerCase().indexOf(c.toLowerCase().slice(0, 6)) === 0;
+  box.innerHTML = cajas.map((c) => {
+    const l = mov.filter((m) => esCaja(m.categoria || (prods.find((p) => p.nombre === m.producto) || {}).categoria, c[0]));
+    const tot = l.reduce((a, m) => a + (Number(m.total) || 0), 0);
+    const pzs = l.reduce((a, m) => a + (Number(m.cantidad) || 0), 0);
+    const vend = {};
+    l.forEach((m) => { vend[m.producto] = (vend[m.producto] || 0) + (Number(m.cantidad) || 0); });
+    const lista = prods.filter((p) => esCaja(p.categoria, c[0]) && (ROLE === "admin" || vend[p.nombre] > 0));
+    Object.keys(vend).forEach((n) => { if (!lista.some((p) => p.nombre === n)) lista.push({ nombre: n }); });
+    const tiles = lista.map((p) => {
+      const v = vend[p.nombre] || 0, hayEx = p.existencia !== undefined && p.existencia !== "" && p.existencia !== null, ex = Number(p.existencia) || 0;
+      const bajo = hayEx && (ex < 0 || Number(p.minimo) > 0 && ex <= Number(p.minimo));
+      return '<div class="stat ' + c[2] + '"><div class="num">' + v + '</div><div class="lab">' + escH(p.nombre) + '</div>' + (hayEx ? '<div class="lab" style="margin-top:5px;font-weight:800;' + (bajo ? "color:#C01E1E;" : "") + '">📦 Existencia: ' + ex + (bajo ? " ⚠️" : "") + "</div>" : "") + "</div>";
+    }).join("");
+    return '<div class="cat-group">' + c[1] + " " + c[0] + '</div><div class="grid2"><div class="stat green"><div class="num">' + moneyP(tot) + '</div><div class="lab">Ventas</div></div><div class="stat"><div class="num">' + pzs + '</div><div class="lab">Piezas vendidas</div></div>' + tiles + "</div>";
+  }).join("");
+}
 async function loadHoy() {
   const today = isoDate(/* @__PURE__ */ new Date());
   document.getElementById("hoyFecha").textContent = fmtDate(/* @__PURE__ */ new Date());
@@ -1389,6 +1425,7 @@ async function loadHoy() {
   document.getElementById("hAutos").textContent = r.lavadasAuto || 0;
   document.getElementById("hMotos").textContent = r.lavadasMoto || 0;
   document.getElementById("hBicis").textContent = r.lavadasBici || 0;
+  renderHoyProductos(today);
   const [rg, a, pers] = await Promise.all([
     apiGet("registro", { desde: today, hasta: today }),
     apiGet("asistencia", { fecha: today }),
