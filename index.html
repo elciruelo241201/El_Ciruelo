@@ -196,6 +196,37 @@ button.secondary{
 .empty{text-align:center; color:var(--ink-soft); font-size:13px; padding:20px 0;}
 .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(14,165,183,.3);border-top-color:var(--agua);border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;}
 @keyframes spin{to{transform:rotate(360deg);}}
+/* rentabilidad */
+nav.tabbar{overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;}
+nav.tabbar::-webkit-scrollbar{display:none;}
+nav.tabbar button{flex:1 0 auto;}
+.rent input,.rent select{font-size:16px;}
+.rent-row{display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:14px;}
+.rent-row:last-child{border-bottom:none;}
+.rent-row .v{font-weight:800; white-space:nowrap; text-align:right;}
+.rent-row.sub{padding:5px 0 5px 14px; font-size:12.5px; color:var(--ink-soft); border-bottom:none;}
+.rent-row.tot{font-weight:800; background:var(--agua-light); border-radius:12px; padding:10px 12px; margin:6px 0; border-bottom:none;}
+.rent-row.tot.good{background:#E4F8EC; color:#1E8E4E;}
+.rent-row.tot.bad{background:#FDE3E3; color:#C01E1E;}
+.rent-aviso{background:#FFF3CF; border:2px solid #E6A800; border-radius:14px; padding:10px 12px; font-size:13px; font-weight:700; color:#8A5A00; margin-bottom:12px;}
+.rent-aviso div{margin:3px 0;}
+.semaforo{display:flex; align-items:center; gap:12px;}
+.semaforo .luz{width:46px; height:46px; border-radius:50%; flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-size:22px;}
+.luz.verde{background:#E4F8EC; border:3px solid #1E8E4E;} .luz.amarillo{background:#FFF3CF; border:3px solid #E6A800;} .luz.rojo{background:#FDE3E3; border:3px solid #D93030;}
+.barra{height:12px; border-radius:8px; background:#EEF4F5; overflow:hidden; margin-top:10px;}
+.barra i{display:block; height:100%; border-radius:8px;}
+.srv{padding:10px 0; border-bottom:1px solid var(--line);}
+.srv:last-child{border-bottom:none;}
+.srv .t{display:flex; justify-content:space-between; align-items:center; gap:8px; font-weight:800; font-size:14px;}
+.srv .d{font-size:11.5px; color:var(--ink-soft); margin-top:2px; line-height:1.4;}
+.pill{display:inline-block; padding:2px 8px; border-radius:8px; font-size:11.5px; font-weight:800; background:#EEF4F5; color:var(--ink-soft);}
+.pill.g{background:#E4F8EC; color:#1E8E4E;} .pill.y{background:#FFF3CF; color:#8A5A00;} .pill.r{background:#FDE3E3; color:#C01E1E;}
+.rtabla{width:100%; border-collapse:collapse; font-size:13px;}
+.rtabla th,.rtabla td{padding:8px 4px; text-align:right; border-bottom:1px solid var(--line);}
+.rtabla th:first-child,.rtabla td:first-child{text-align:left;}
+.rtabla th{font-size:11.5px; color:var(--ink-soft); text-transform:uppercase;}
+details.cfg{border:2px solid var(--line); border-radius:12px; padding:9px 11px; margin-top:8px;}
+details.cfg summary{font-weight:800; font-size:13.5px; cursor:pointer;}
 </style>
 </head>
 <body>
@@ -246,8 +277,17 @@ button.secondary{
     </div>
     <div class="card solo-admin">
       <h3>🧾 Registrar gasto</h3>
-      <label>Concepto</label>
-      <input id="gastoConcepto" type="text" list="gastoSugerencias" placeholder="Ej. Agua, Luz, Jabón…">
+      <label>Tipo de gasto</label>
+      <div class="chips" id="gastoTipoChips">
+        <div class="chip" data-v="Fijo">📌 Fijo</div>
+        <div class="chip" data-v="Variable">🧴 Variable</div>
+        <div class="chip" data-v="Equipo">🔧 Equipo / mantenimiento</div>
+      </div>
+      <label>Categoría</label>
+      <select id="gastoCategoria" onchange="gastoCatCambio()"><option value="">Primero elige el tipo…</option></select>
+      <div class="hint" id="gastoAguaHint" style="display:none;">💧 Si pagas el agua una vez al año, captúrala en Rentabilidad > Configuración y la app la divide entre 12. Aquí registra solo pagos mensuales.</div>
+      <label>Concepto (opcional)</label>
+      <input id="gastoConcepto" type="text" list="gastoSugerencias" placeholder="Ej. Recibo de luz de octubre">
       <datalist id="gastoSugerencias"><option value="Agua"><option value="Luz"><option value="Jabón y shampoo"><option value="Cera"><option value="Gasolina"><option value="Renta"><option value="Mantenimiento"></datalist>
       <label>Monto (MXN)</label>
       <input id="gastoMonto" type="number" inputmode="decimal" placeholder="0">
@@ -258,6 +298,55 @@ button.secondary{
       <div id="hoyRegistros"><div class="empty">Cargando…</div></div>
     </div>
     <button class="primary" onclick="go('registrar')">+ Registrar lavado o servicio</button>
+  </div>
+
+  <!-- ===================== RENTABILIDAD ===================== -->
+  <div class="view solo-admin rent" id="view-rentabilidad">
+    <div class="card">
+      <h3>💹 Rentabilidad · Autolavado</h3>
+      <label>Mes</label>
+      <select id="rentMes" onchange="loadRentabilidad()"></select>
+      <div class="hint" id="rentNota"></div>
+    </div>
+    <div id="rentAvisos"></div>
+    <div class="card"><h3>📊 Reporte mensual</h3><div id="rentReporte"><div class="empty">Cargando…</div></div></div>
+    <div class="card"><h3>🧮 Margen por servicio</h3><div id="rentMargen"></div></div>
+    <div class="card"><h3>⚖️ Punto de equilibrio</h3><div id="rentEquilibrio"></div></div>
+    <div class="card"><h3>⏱️ Mi ganancia por hora</h3><div id="rentHora"></div></div>
+    <div class="card"><h3>📈 Tendencia · últimos 3 meses</h3><div id="rentTendencia"></div></div>
+    <div class="card"><h3>🥤🌸 Cajas de productos</h3><div id="rentCajas"></div></div>
+    <div class="card">
+      <h3>🧴 Rendimiento de insumos</h3>
+      <div class="hint" style="margin-top:0;">Cuando abras un insumo nuevo (un garrafón de shampoo, un bote de cera…), anótalo. Al abrir el siguiente del mismo producto, la app calcula cuántos lavados rindió el anterior y su costo por lavado, y lo usa en el margen. Si ya mides un insumo aquí, no lo incluyas en el costo por servicio de Configuración.</div>
+      <label>Producto</label>
+      <input id="insProducto" type="text" list="insSugerencias" placeholder="Ej. Shampoo 20L">
+      <datalist id="insSugerencias"></datalist>
+      <div class="row2">
+        <div><label>Costo ($)</label><input id="insCosto" type="number" inputmode="decimal" placeholder="0"></div>
+        <div><label>Fecha de apertura</label><input id="insFecha" type="date"></div>
+      </div>
+      <button class="primary" onclick="abrirInsumo()">🧴 Abrí un insumo nuevo</button>
+      <div id="insLista"></div>
+    </div>
+    <div class="card" id="rentConfigCard">
+      <h3>⚙️ Configuración</h3>
+      <div class="hint" style="margin-top:0;">Todo es opcional. Lo que dejes vacío no se calcula y aparece como "Dato pendiente".</div>
+      <label>Mi sueldo mensual como dueño ($)</label>
+      <input id="cfgSueldo" type="number" inputmode="decimal" placeholder="Opcional">
+      <label>Apartado mensual para desgaste de equipo ($)</label>
+      <input id="cfgApartado" type="number" inputmode="decimal" placeholder="Opcional">
+      <label>Renta mensual, o lo que cobrarías si rentaras el local ($)</label>
+      <input id="cfgRenta" type="number" inputmode="decimal" placeholder="Opcional">
+      <label>Agua: pago anual ($)</label>
+      <input id="cfgAgua" type="number" inputmode="decimal" placeholder="Opcional">
+      <div class="hint">La app lo divide entre 12 automáticamente. Si lo capturas aquí, no lo registres además como gasto de Agua.</div>
+      <label>Horas que le dedico al negocio por semana</label>
+      <input id="cfgHoras" type="number" inputmode="decimal" placeholder="Opcional">
+      <label>Costo de insumos por servicio</label>
+      <div class="hint" style="margin-top:0;">Jabón, cera, agua y luz aproximada de cada servicio, por tamaño de vehículo. Toca cada grupo para abrirlo.</div>
+      <div id="cfgCostos"></div>
+      <button class="primary" onclick="guardarConfigRent()">Guardar configuración</button>
+    </div>
   </div>
 
   <!-- ===================== REGISTRAR ===================== -->
@@ -554,6 +643,7 @@ button.secondary{
   <button data-v="catalogo"><span class="ic">💲</span>Tarifas</button>
   <button data-v="asistencia"><span class="ic">👷</span>Personal</button>
   <button data-v="cortes"><span class="ic">📅</span>Cortes</button>
+  <button data-v="rentabilidad"><span class="ic">💹</span>Rentabilidad</button>
 </nav>
 
 <!-- Modal config -->
@@ -665,6 +755,10 @@ button.secondary{
     <input id="geConcepto" type="text">
     <label>Monto (MXN)</label>
     <input id="geMonto" type="number" inputmode="decimal">
+    <label>Tipo de gasto</label>
+    <select id="geTipo" onchange="llenarCatsEdicion(this.value, '')"><option value="">Sin clasificar</option><option value="Fijo">Fijo</option><option value="Variable">Variable</option><option value="Equipo">Equipo / mantenimiento</option></select>
+    <label>Categoría</label>
+    <select id="geCategoria"><option value="">Sin categoría</option></select>
     <button class="primary" onclick="guardarEdicionGasto()">Guardar cambios</button>
     <button class="secondary" id="btnBorrarGasto" style="color:#C01E1E;border-color:#C01E1E;" onclick="borrarGasto()">🗑️ Eliminar este gasto</button>
   </div>
@@ -990,6 +1084,8 @@ function demoProdPost(action, p) {
 const _DEMO_PROD_GET = ["productos", "movProductos"], _DEMO_PROD_POST = ["updateMovProducto", "deleteMovProducto", "ventaProductos", "compraProducto", "ajusteProducto", "updateProducto", "addProducto"];
 function demoGet(action, params) {
   if (_DEMO_PROD_GET.includes(action)) return demoProdGet(action, params);
+  if (action === "config") return { config: demoStore("config", {}) };
+  if (action === "insumos") return { insumos: demoStore("insumos", []).map((x, i) => Object.assign({ row: i + 2 }, x)) };
   if (action === "catalogo") return demoStore("catalogo", DEMO.catalogo);
   if (action === "historico") {
     const z = (n) => String(n).padStart(2, "0");
@@ -1115,6 +1211,25 @@ function demoGet(action, params) {
   return {};
 }
 function demoPost(action, payload) {
+  if (action === "saveConfig") {
+    const c = demoStore("config", {});
+    Object.keys(payload.valores || {}).forEach((k) => { c[k] = payload.valores[k]; });
+    demoSave("config", c);
+    return { ok: true };
+  }
+  if (action === "addInsumo") {
+    const l = demoStore("insumos", []);
+    l.push({ fecha: payload.fecha || isoDate(new Date()), producto: payload.producto, costo: Number(payload.costo) || 0 });
+    demoSave("insumos", l);
+    return { ok: true };
+  }
+  if (action === "deleteInsumo") {
+    const l = demoStore("insumos", []), x = l[payload.row - 2];
+    if (!x || x.producto !== payload.productoActual || Number(x.costo) !== Number(payload.costoActual)) return { error: "Ese registro cambió. Actualiza la pantalla e inténtalo de nuevo." };
+    l.splice(payload.row - 2, 1);
+    demoSave("insumos", l);
+    return { ok: true };
+  }
   if (action === "updateGasto" || action === "deleteGasto") {
     const all = demoStore("gastos", []);
     const g = all[payload.row - 2];
@@ -1123,6 +1238,10 @@ function demoPost(action, payload) {
     else {
       g["Concepto"] = payload.concepto;
       g["Monto"] = Number(payload.monto);
+      if (payload.tipo !== undefined) {
+        g["Tipo"] = payload.tipo;
+        g["Categoría"] = payload.categoria;
+      }
     }
     demoSave("gastos", all);
     return { ok: true };
@@ -1180,7 +1299,7 @@ function demoPost(action, payload) {
   }
   if (action === "addGasto") {
     const all = demoStore("gastos", []);
-    all.push({ "Fecha": payload.fecha || (/* @__PURE__ */ new Date()).toISOString(), "Concepto": payload.concepto, "Monto": Number(payload.monto) || 0 });
+    all.push({ "Fecha": payload.fecha || (/* @__PURE__ */ new Date()).toISOString(), "Concepto": payload.concepto, "Monto": Number(payload.monto) || 0, "Tipo": payload.tipo || "", "Categoría": payload.categoria || "" });
     demoSave("gastos", all);
     return { ok: true };
   }
@@ -1257,12 +1376,15 @@ function go(view) {
   document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
   document.getElementById("view-" + view).classList.add("active");
   document.querySelectorAll("nav.tabbar button").forEach((b) => b.classList.toggle("active", b.dataset.v === view));
+  const navT = document.querySelector("nav.tabbar"), tabA = document.querySelector("nav.tabbar button.active");
+  if (navT && tabA) navT.scrollLeft = tabA.offsetLeft - (navT.clientWidth - tabA.offsetWidth) / 2;
   if (view === "hoy") loadHoy();
   if (view === "clientes") loadClientes();
   if (view === "productos") loadProductos();
   if (view === "catalogo") loadCatalogo();
   if (view === "asistencia") loadAsistencia();
   if (view === "cortes") loadCortes();
+  if (view === "rentabilidad") loadRentabilidad();
 }
 document.querySelectorAll("nav.tabbar button").forEach((b) => b.addEventListener("click", () => go(b.dataset.v)));
 function setupChips(containerId, onChange) {
@@ -2504,24 +2626,34 @@ async function loadAsistencia() {
   }
   box.innerHTML = personal.map((p) => '\n    <div class="emp-row">\n      <span class="emp-name">'.concat(p.empleado, '<br><span class="solo-admin" style="font-weight:700;color:var(--ink-soft);font-size:11.5px;">').concat(money(p.sueldoDiario), '/día</span></span>\n      <button class="toggle ').concat(asistentes[p.empleado] ? "on" : "", '" onclick="toggleAsistencia(this,\'').concat(p.empleado.replace(/'/g, "\\'"), '\')"><span class="knob"></span></button>\n    </div>')).join("");
 }
+setupChips("gastoTipoChips", () => gastoTipoCambio());
 async function guardarGasto() {
-  const concepto = document.getElementById("gastoConcepto").value.trim();
+  const tipo = (document.querySelector("#gastoTipoChips .chip.sel") || { dataset: {} }).dataset.v || "";
+  const categoria = document.getElementById("gastoCategoria").value;
+  let concepto = document.getElementById("gastoConcepto").value.trim();
   const monto = Number(document.getElementById("gastoMonto").value);
-  if (!concepto) {
-    showToast("Escribe el concepto del gasto");
+  if (!tipo) {
+    showToast("Elige el tipo: Fijo, Variable o Equipo");
     return;
   }
+  if (!categoria) {
+    showToast("Elige la categoría del gasto");
+    return;
+  }
+  if (!concepto) concepto = categoria;
   if (!(monto > 0)) {
     showToast("Anota el monto del gasto");
     return;
   }
-  const r = await apiPost("addGasto", { fecha: (/* @__PURE__ */ new Date()).toISOString(), concepto, monto, registradoPor: "Admin" });
+  const r = await apiPost("addGasto", { fecha: (/* @__PURE__ */ new Date()).toISOString(), concepto, monto, tipo, categoria, registradoPor: "Admin" });
   if (r.error) {
     showToast("Error: " + r.error);
     return;
   }
   document.getElementById("gastoConcepto").value = "";
   document.getElementById("gastoMonto").value = "";
+  document.querySelectorAll("#gastoTipoChips .chip").forEach((c) => c.classList.remove("sel"));
+  gastoTipoCambio();
   showToast("Gasto guardado ✓");
   loadHoy();
 }
@@ -3017,6 +3149,7 @@ function abrirGasto(i) {
   gastoBorrarListo = false;
   document.getElementById("geConcepto").value = g.c;
   document.getElementById("geMonto").value = g.m;
+  llenarCatsEdicion(g.t, g.k);
   document.getElementById("gastoEditFecha").textContent = g.f && !isNaN(g.f) ? "Registrado el ".concat(DIAS_S[g.f.getDay()], " ").concat(g.f.getDate(), "/").concat(g.f.getMonth() + 1) : "";
   const b = document.getElementById("btnBorrarGasto");
   b.textContent = "🗑️ Eliminar este gasto";
@@ -3034,7 +3167,7 @@ async function guardarEdicionGasto() {
     showToast("Escribe el monto");
     return;
   }
-  const r = await apiPost("updateGasto", { row: g.row, conceptoActual: g.c, montoActual: g.m, concepto, monto });
+  const r = await apiPost("updateGasto", { row: g.row, conceptoActual: g.c, montoActual: g.m, concepto, monto, tipo: document.getElementById("geTipo").value, categoria: document.getElementById("geCategoria").value });
   if (r && r.error) {
     showToast(r.error);
     return;
@@ -3067,7 +3200,7 @@ function renderDetalleGastos(lista) {
     box.innerHTML = '<div class="empty">No hay gastos registrados en este periodo.</div>';
     return;
   }
-  const gs = lista.map((g) => ({ f: new Date(g["Fecha"]), c: String(g["Concepto"] || "").trim(), m: Number(g["Monto"]) || 0, row: g["_row"] })).sort((a, b) => b.f - a.f);
+  const gs = lista.map((g) => ({ f: new Date(g["Fecha"]), c: String(g["Concepto"] || "").trim(), m: Number(g["Monto"]) || 0, row: g["_row"], t: String(g["Tipo"] || ""), k: String(g["Categoría"] || "") })).sort((a, b) => b.f - a.f);
   window.histGastosLista = gs;
   const total = gs.reduce((t, g) => t + g.m, 0);
   const por = {};
@@ -3245,6 +3378,506 @@ function corteHtml(r) {
   const util = (r.ingresosTotal || 0) - gastos;
   return '\n    <div class="list-row pos-row"><span>Efectivo</span><span>'.concat(money(r.ingresosEfectivo), '</span></div>\n    <div class="list-row pos-row"><span>Tarjeta</span><span>').concat(money(r.ingresosTarjeta), '</span></div>\n    <div class="list-row neg-row"><span>Sueldos (por asistencia)</span><span>').concat(money(r.sueldosTotal), "</span></div>\n    ").concat(esAdm ? '<div class="list-row neg-row"><span>Otros gastos</span><span>'.concat(money(r.gastosOtros), "</span></div>") : "", '\n    <div class="list-row neg-row"><span>Gastos totales</span><span>').concat(money(gastos), '</span></div>\n    <div class="list-row ').concat(util < 0 ? "neg-row" : "pos-row", '"><b>Utilidad</b><b>').concat(money(util), "</b></div>\n    ").concat(esAdm ? '<div class="list-row neu-row"><span>🤝 Cortesías (lavadas sin cobro)</span><span>'.concat(r.cortesias || 0, " · valor ").concat(money(r.valorCortesias), "</span></div>") : "");
 }
+// =====================================================================
+// RENTABILIDAD (pestaña solo Administrador)
+// Todo se calcula aquí con los datos que ya existen: Registro, Gastos, Asistencia (sueldos),
+// Movimientos de productos, más la Configuración y los Insumos guardados en Sheets.
+// =====================================================================
+const RENT_CATS = {
+  Fijo: ["Renta", "Luz base", "Internet", "Sueldos", "Otro fijo"],
+  Variable: ["Agua", "Jabones y químicos", "Ceras", "Microfibras", "Comisión de terminal", "Publicidad", "Otro variable"],
+  Equipo: ["Reparación hidrolavadora", "Reparación aspiradora", "Reparación compresor", "Otro mantenimiento"]
+};
+const RENT_MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const RENT = { cfg: {}, ins: [], insConf: -1, sinBackend: false, grupos: [], ctx: null };
+
+const rentNorm = (s) => String(s == null ? "" : s).trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+function rentNum(v) {
+  if (v === undefined || v === null || String(v).trim() === "") return null;
+  const n = Number(v);
+  return isNaN(n) ? null : n;
+}
+const rentMn = (n) => (Number(n) < 0 ? "-" : "") + "$" + Math.abs(Number(n) || 0).toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const rentPct = (n) => Math.round(n) + "%";
+const rentKey = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+const rentMesCorto = (y, m) => RENT_MESES[m - 1].slice(0, 3);
+
+// ---------- Gastos: tipo y categoría ----------
+function gastoTipoCambio() {
+  const t = (document.querySelector("#gastoTipoChips .chip.sel") || { dataset: {} }).dataset.v || "";
+  const sel = document.getElementById("gastoCategoria");
+  sel.innerHTML = '<option value="">Elige la categoría…</option>' + (RENT_CATS[t] || []).map((c) => "<option>" + escH(c) + "</option>").join("");
+  gastoCatCambio();
+}
+function gastoCatCambio() {
+  const c = document.getElementById("gastoCategoria").value;
+  const h = document.getElementById("gastoAguaHint");
+  if (h) h.style.display = c === "Agua" ? "block" : "none";
+}
+function llenarCatsEdicion(tipo, cat) {
+  const st = document.getElementById("geTipo"), sc = document.getElementById("geCategoria");
+  st.value = tipo || "";
+  const lista = (RENT_CATS[tipo] || []).slice();
+  if (cat && lista.indexOf(cat) < 0) lista.push(cat);
+  sc.innerHTML = '<option value="">Sin categoría</option>' + lista.map((c) => "<option>" + escH(c) + "</option>").join("");
+  sc.value = cat || "";
+}
+
+// ---------- Costos de insumos por servicio (Configuración) ----------
+function rentGrupos(cat) {
+  const g = [];
+  const orden = ["Moto", "Bici", "Coche", "Camioneta"];
+  orden.forEach((c) => {
+    [["basico", "Paq.#1 Básico"], ["express", "Lavado Express"]].forEach((p) => {
+      const filas = (cat.tabla1 || []).filter((r) => r.categoria === c && r[p[0]] !== "—" && r[p[0]] !== undefined);
+      if (filas.length) g.push({ titulo: c + " · " + p[1], filas: filas.map((r) => ({ label: r.tamano, key: "ins|" + p[1] + "|" + c + "|" + r.tamano })), llenar: true });
+    });
+  });
+  orden.forEach((c) => {
+    [["ceraLiquida", "Cera Líquida"], ["ceraCrema", "Cera en Crema"]].forEach((p) => {
+      const filas = (cat.ceras || []).filter((r) => r.categoria === c && r[p[0]] !== "—" && r[p[0]] !== undefined);
+      if (filas.length) g.push({ titulo: c + " · " + p[1], filas: filas.map((r) => ({ label: r.tamano, key: "ins|" + p[1] + "|" + c + "|" + r.tamano })), llenar: true });
+    });
+  });
+  if ((cat.otros || []).length) g.push({ titulo: "Otros servicios y extras", filas: cat.otros.map((o) => ({ label: o.servicio, key: "ins|" + o.servicio + "||" })), llenar: false });
+  return g;
+}
+function rentCostosHtml() {
+  return RENT.grupos.map((g, gi) => {
+    const nCap = g.filas.filter((f) => rentNum(RENT.cfg[f.key]) !== null).length;
+    return '<details class="cfg"><summary>' + escH(g.titulo) + ' <span class="hint" style="display:inline;">(' + nCap + "/" + g.filas.length + ")</span></summary>" +
+      (g.llenar ? '<div class="row2" style="margin-top:8px;align-items:end;"><div><label>Mismo costo para todos</label><input type="number" inputmode="decimal" id="cfgFill' + gi + '" placeholder="$"></div><button class="secondary" style="margin-top:0;" onclick="rentLlenarGrupo(' + gi + ')">Aplicar</button></div>' : "") +
+      g.filas.map((f, fi) => '<label>' + escH(f.label) + '</label><input type="number" inputmode="decimal" placeholder="$ de insumos" data-key="' + escH(f.key) + '" id="cfgC' + gi + "_" + fi + '" value="' + (rentNum(RENT.cfg[f.key]) === null ? "" : rentNum(RENT.cfg[f.key])) + '">').join("") +
+      "</details>";
+  }).join("");
+}
+function rentLlenarGrupo(gi) {
+  const v = document.getElementById("cfgFill" + gi).value;
+  if (v === "") {
+    showToast("Escribe el costo que quieres aplicar");
+    return;
+  }
+  RENT.grupos[gi].filas.forEach((f, fi) => { document.getElementById("cfgC" + gi + "_" + fi).value = v; });
+  showToast("Aplicado. Falta tocar Guardar configuración");
+}
+function rentLlenarConfig() {
+  const set = (id, k) => { const v = rentNum(RENT.cfg[k]); document.getElementById(id).value = v === null ? "" : v; };
+  set("cfgSueldo", "sueldoDueno");
+  set("cfgApartado", "apartadoEquipo");
+  set("cfgRenta", "renta");
+  set("cfgAgua", "aguaAnual");
+  set("cfgHoras", "horasSemana");
+  document.getElementById("cfgCostos").innerHTML = rentCostosHtml();
+}
+async function guardarConfigRent() {
+  const valores = {
+    sueldoDueno: document.getElementById("cfgSueldo").value,
+    apartadoEquipo: document.getElementById("cfgApartado").value,
+    renta: document.getElementById("cfgRenta").value,
+    aguaAnual: document.getElementById("cfgAgua").value,
+    horasSemana: document.getElementById("cfgHoras").value
+  };
+  document.querySelectorAll("#cfgCostos input[data-key]").forEach((i) => { valores[i.dataset.key] = i.value; });
+  const r = await apiPost("saveConfig", { valores });
+  if (r && r.error) {
+    showToast(String(r.error).indexOf("no reconocida") >= 0 ? "Falta actualizar Code.gs (Rentabilidad)" : r.error);
+    return;
+  }
+  showToast("Configuración guardada ✓");
+  loadRentabilidad();
+}
+
+// ---------- Insumos: rendimiento ----------
+function rentInsumos(ins, reg) {
+  const g = {};
+  ins.forEach((i) => { const k = rentNorm(i.producto); (g[k] = g[k] || { nombre: i.producto, filas: [] }).filas.push(i); });
+  const lav = reg.filter((r) => r["Categoría"] === "Lavada").map((r) => r._d.getTime());
+  return Object.keys(g).map((k) => {
+    const f = g[k].filas.map((i) => Object.assign({}, i, { _t: new Date(i.fecha + "T00:00:00").getTime() })).sort((a, b) => a._t - b._t || a.row - b.row);
+    f.forEach((x, idx) => {
+      const sig = f[idx + 1];
+      x.abierto = !sig;
+      x.cierre = sig ? sig._t : null;
+      x.servicios = lav.filter((t) => t >= x._t && (x.cierre === null || t < x.cierre)).length;
+      x.cps = !x.abierto && x.servicios > 0 ? x.costo / x.servicios : null;
+    });
+    return { nombre: g[k].nombre, filas: f };
+  });
+}
+// Costo medido por lavado: suma, por producto, del último insumo ya terminado (con fecha de cierre <= fin del mes)
+function rentMedido(grupos, finTs) {
+  let tot = 0;
+  const det = [];
+  grupos.forEach((g) => {
+    const c = g.filas.filter((x) => !x.abierto && x.cps !== null && x.cierre <= finTs + 864e5);
+    if (c.length) {
+      const u = c[c.length - 1];
+      tot += u.cps;
+      det.push({ nombre: g.nombre, cps: u.cps });
+    }
+  });
+  return { total: tot, det };
+}
+function rentCostoManual(cfg, r) {
+  const s = String(r["Paquete / Servicio"] || "");
+  let v = rentNum(cfg["ins|" + s + "|" + (r["Tipo vehículo"] || "") + "|" + (r["Tamaño"] || "")]);
+  if (v === null) v = rentNum(cfg["ins|" + s + "||"]);
+  return v;
+}
+async function abrirInsumo() {
+  const producto = document.getElementById("insProducto").value.trim();
+  const costoTxt = document.getElementById("insCosto").value;
+  const fecha = document.getElementById("insFecha").value || isoDate(new Date());
+  if (!producto) { showToast("Escribe el producto"); return; }
+  if (costoTxt === "" || !(Number(costoTxt) >= 0)) { showToast("Escribe el costo"); return; }
+  const r = await apiPost("addInsumo", { producto, costo: Number(costoTxt), fecha, registradoPor: "Admin" });
+  if (r && r.error) {
+    showToast(String(r.error).indexOf("no reconocida") >= 0 ? "Falta actualizar Code.gs (Rentabilidad)" : r.error);
+    return;
+  }
+  document.getElementById("insProducto").value = "";
+  document.getElementById("insCosto").value = "";
+  showToast("Insumo abierto anotado ✓");
+  loadRentabilidad();
+}
+async function insBorrar(i) {
+  const x = RENT.insFilas[i];
+  if (!x) return;
+  if (RENT.insConf !== i) {
+    RENT.insConf = i;
+    rentRenderInsumos();
+    return;
+  }
+  const r = await apiPost("deleteInsumo", { row: x.row, productoActual: x.producto, costoActual: x.costo });
+  RENT.insConf = -1;
+  if (r && r.error) { showToast(r.error); return; }
+  showToast("Registro eliminado ✓");
+  loadRentabilidad();
+}
+function rentFechaCorta(ts) {
+  const d = new Date(ts);
+  return d.getDate() + " " + RENT_MESES[d.getMonth()].slice(0, 3);
+}
+function rentRenderInsumos() {
+  const box = document.getElementById("insLista");
+  const grupos = RENT.insGrupos || [];
+  RENT.insFilas = [];
+  document.getElementById("insSugerencias").innerHTML = grupos.map((g) => '<option value="' + escH(g.nombre) + '">').join("");
+  if (!grupos.length) {
+    box.innerHTML = '<div class="empty">Aún no has anotado insumos abiertos.</div>';
+    return;
+  }
+  const med = rentMedido(grupos, Date.now());
+  let html = '<div class="rent-row tot good" style="margin-top:12px;"><span>Costo medido por lavado (se suma al margen)</span><span class="v">' + rentMn(med.total) + "</span></div>";
+  grupos.forEach((g) => {
+    html += '<div class="cat-group">' + escH(g.nombre) + "</div>";
+    g.filas.slice().reverse().forEach((x) => {
+      const idx = RENT.insFilas.push(x) - 1;
+      const rango = rentFechaCorta(x._t) + " → " + (x.abierto ? "hoy" : rentFechaCorta(x.cierre));
+      const detalle = x.abierto ? "en uso · va en " + x.servicios + " lavado" + (x.servicios === 1 ? "" : "s") : (x.servicios > 0 ? "rindió " + x.servicios + " lavados · " + rentMn(x.cps) + " por lavado" : "sin lavados en ese periodo");
+      html += '<div class="srv"><div class="t"><span>' + rango + " · " + rentMn(x.costo) + '</span><button class="pill ' + (RENT.insConf === idx ? "r" : "y") + '" style="border:none;cursor:pointer;" onclick="insBorrar(' + idx + ')">' + (RENT.insConf === idx ? "¿Seguro? Toca otra vez" : "🗑") + '</button></div><div class="d">' + detalle + "</div></div>";
+    });
+  });
+  box.innerHTML = html;
+}
+
+// ---------- Cálculo de un mes ----------
+function rentCalcMes(ctx, y, m) {
+  const key = y + "-" + String(m).padStart(2, "0");
+  const diasMes = new Date(y, m, 0).getDate();
+  const hoy = ctx.hoy;
+  const parcial = hoy.getFullYear() === y && hoy.getMonth() + 1 === m;
+  const frac = parcial ? hoy.getDate() / diasMes : 1;
+  const cfg = ctx.cfg;
+  const cSueldo = rentNum(cfg.sueldoDueno), cApartado = rentNum(cfg.apartadoEquipo), cRenta = rentNum(cfg.renta), cAgua = rentNum(cfg.aguaAnual), cHoras = rentNum(cfg.horasSemana);
+  const reg = ctx.reg.filter((r) => r._k === key);
+  const gas = ctx.gas.filter((g) => g._k === key);
+  const sueldos = ((ctx.hist && ctx.hist.dias) || []).filter((d) => String(d.fecha).indexOf(key) === 0).reduce((a, d) => a + (Number(d.sueldos) || 0), 0);
+  const ingresos = reg.reduce((a, r) => a + (Number(r["Monto cobrado"]) || 0), 0);
+  const lavados = reg.filter((r) => r["Categoría"] === "Lavada").length;
+  const cobrados = reg.filter((r) => (Number(r["Monto cobrado"]) || 0) > 0).length;
+  const notas = [], pend = [];
+
+  // gastos por tipo
+  let fijoReal = 0, varReal = 0, equipoReal = 0, sinClas = 0, sinClasN = 0, rentaReal = 0, aguaReal = 0, aguaIgn = 0;
+  gas.forEach((g) => {
+    const mt = Number(g["Monto"]) || 0, t = String(g["Tipo"] || "").trim(), c = rentNorm(g["Categoría"]);
+    if (t === "Fijo") {
+      fijoReal += mt;
+      if (c === "renta") rentaReal += mt;
+    } else if (t === "Variable") {
+      if (c === "agua") {
+        aguaReal += mt;
+        if (cAgua !== null) { aguaIgn += mt; return; }
+      }
+      varReal += mt;
+    } else if (t === "Equipo") equipoReal += mt;
+    else { sinClas += mt; sinClasN++; }
+  });
+  const rentaEst = cRenta !== null && rentaReal === 0 ? cRenta * frac : 0;
+  const aguaEst = cAgua !== null ? cAgua / 12 * frac : 0;
+  const fijos = fijoReal + sueldos + rentaEst;
+  const variables = varReal + aguaEst;
+  const equipo = cApartado !== null ? cApartado * frac : equipoReal;
+  const miSueldo = cSueldo !== null ? cSueldo * frac : null;
+  const utilNeg = ingresos - fijos - variables - equipo - sinClas;
+  const utilReal = miSueldo !== null ? utilNeg - miSueldo : null;
+
+  // costo de insumos por servicio
+  const finTs = new Date(y, m, 0, 23, 59, 59).getTime();
+  const med = rentMedido(ctx.insGrupos, finTs);
+  const rows = reg.map((r) => {
+    const man = rentCostoManual(cfg, r);
+    let c = man;
+    if (r["Categoría"] === "Lavada" && med.total > 0) c = (man || 0) + med.total;
+    return { r, c };
+  });
+  const insumosTotal = rows.reduce((a, x) => a + (x.c || 0), 0);
+  const hayInsumos = rows.some((x) => x.c !== null);
+  const cortes = rows.filter((x) => x.r["Tipo (Sello/Canje)"] === "Cortesía" && x.r["Categoría"] === "Lavada");
+  const canjes = rows.filter((x) => x.r["Tipo (Sello/Canje)"] === "Canje");
+  const mo = reg.length > 0 ? sueldos / reg.length : 0;
+
+  // margen por servicio
+  const gs = {};
+  rows.forEach((x) => {
+    const n = String(x.r["Paquete / Servicio"] || "(sin nombre)");
+    const o = gs[n] = gs[n] || { n, u: 0, uc: 0, ing: 0, cs: 0, sinCosto: 0 };
+    const mt = Number(x.r["Monto cobrado"]) || 0;
+    o.u++;
+    o.ing += mt;
+    if (mt > 0) o.uc++;
+    if (x.c === null) o.sinCosto++;
+    else o.cs += x.c;
+  });
+  const servicios = Object.keys(gs).map((k) => {
+    const o = gs[k];
+    const precio = o.uc > 0 ? o.ing / o.uc : 0;
+    const conCosto = o.u - o.sinCosto;
+    const costo = conCosto > 0 ? o.cs / conCosto : null;
+    const margen = precio - (costo || 0) - mo;
+    return { n: o.n, u: o.u, precio, costo, mo, margen, pct: precio > 0 ? margen / precio * 100 : null, sinCosto: o.sinCosto };
+  }).sort((a, b) => b.margen - a.margen);
+  const faltan = servicios.filter((s) => s.sinCosto > 0 && s.n !== "Variado" && s.n !== "(sin nombre)").map((s) => s.n);
+
+  // punto de equilibrio
+  let margenProm = null, fuenteMargen = "";
+  if (lavados > 0) {
+    if (hayInsumos) { margenProm = (ingresos - insumosTotal) / lavados; fuenteMargen = "insumos"; }
+    else { margenProm = (ingresos - variables) / lavados; fuenteMargen = "gastos"; }
+  }
+  const necesarios = margenProm > 0 && fijos > 0 ? Math.ceil(fijos / margenProm) : null;
+  const necesariosTodo = margenProm > 0 && (fijos + equipo + (miSueldo || 0)) > 0 ? Math.ceil((fijos + equipo + (miSueldo || 0)) / margenProm) : null;
+  let semaforo = null;
+  if (necesarios) semaforo = lavados >= necesarios ? "verde" : lavados >= necesarios * 0.8 ? "amarillo" : "rojo";
+
+  // ganancia por hora
+  const horasMes = cHoras !== null && cHoras > 0 ? cHoras * diasMes / 7 * frac : null;
+  const baseHora = utilReal !== null ? utilReal : utilNeg;
+  const porHora = horasMes ? baseHora / horasMes : null;
+
+  // clientes recurrentes
+  const pl = {};
+  reg.forEach((r) => {
+    if (r["Categoría"] !== "Lavada") return;
+    const p = String(r["Placa"] || "").trim().toUpperCase();
+    if (p) pl[p] = (pl[p] || 0) + 1;
+  });
+  const placas = Object.keys(pl).length, recur = Object.keys(pl).filter((p) => pl[p] >= 2).length;
+
+  // cajas de productos
+  const esCaja = (cat, c) => String(cat || "").toLowerCase().indexOf(c.toLowerCase().slice(0, 6)) === 0;
+  const cajas = ["Bebidas", "Aromatizantes"].map((c) => {
+    const mv = ctx.mov.filter((x) => x._k === key && esCaja(x.categoria, c));
+    const v = mv.filter((x) => x.tipo === "Venta"), co = mv.filter((x) => x.tipo === "Compra");
+    const ven = v.reduce((a, x) => a + (Number(x.total) || 0), 0), cos = v.reduce((a, x) => a + (Number(x.cantidad) || 0) * (Number(x.costo) || 0), 0), com = co.reduce((a, x) => a + (Number(x.total) || 0), 0);
+    return { caja: c, ven, cos, ut: ven - cos, com, saldo: ven - com, piezas: v.reduce((a, x) => a + (Number(x.cantidad) || 0), 0) };
+  });
+
+  // avisos
+  if (cSueldo === null) pend.push("Mi sueldo mensual como dueño (no se calcula la Utilidad real)");
+  if (cApartado === null) pend.push("Apartado mensual para desgaste de equipo (mientras tanto se usan las reparaciones reales: " + rentMn(equipoReal) + ")");
+  if (cRenta === null && rentaReal === 0) pend.push("Renta (o lo que cobrarías si rentaras el local)");
+  if (cAgua === null && aguaReal === 0) pend.push("Agua (pago anual en Configuración, o un gasto de Agua en el mes)");
+  if (cHoras === null) pend.push("Horas que le dedicas al negocio por semana (no se calcula tu ganancia por hora)");
+  if (!hayInsumos) pend.push("Costo de insumos por servicio (el margen sale sin descontar insumos)");
+  else if (faltan.length) pend.push("Costo de insumos de: " + faltan.slice(0, 4).join(", ") + (faltan.length > 4 ? " y " + (faltan.length - 4) + " más" : ""));
+  if (sinClasN) pend.push(sinClasN + " gasto" + (sinClasN === 1 ? "" : "s") + " sin tipo ni categoría (" + rentMn(sinClas) + "): edítalos con ✏️ en Históricos");
+  if (parcial) notas.push("Mes en curso: cifras a la fecha (día " + hoy.getDate() + " de " + diasMes + "). Renta, agua, apartado y tu sueldo se toman proporcionales a los días transcurridos.");
+  if (aguaIgn > 0) notas.push("Hay " + rentMn(aguaIgn) + " en gastos de Agua que no se suman porque ya capturaste el pago anual en Configuración.");
+  if (cRenta !== null && rentaReal > 0) notas.push("Se usó la renta real registrada en Gastos, no la estimada de Configuración.");
+  if (cApartado !== null && equipoReal > 0) notas.push("Reparaciones pagadas este mes: " + rentMn(equipoReal) + " (cubiertas con el apartado de equipo, no se suman otra vez).");
+  if (fuenteMargen === "gastos") notas.push("Margen por lavado calculado con tus gastos variables reales, porque aún no hay costos de insumos.");
+
+  return {
+    key, y, m, label: RENT_MESES[m - 1] + " " + y, corto: rentMesCorto(y, m), parcial, frac, diasMes,
+    ingresos, lavados, nServicios: reg.length, ticket: cobrados > 0 ? ingresos / cobrados : null,
+    sueldos, rentaEst, fijoReal, fijos, variables, varReal, aguaEst, equipo, equipoReal, sinClas, sinClasN, miSueldo, utilNeg, utilReal,
+    cortesias: { n: cortes.length, ins: cortes.reduce((a, x) => a + (x.c || 0), 0) },
+    canjes: { n: canjes.length, ins: canjes.reduce((a, x) => a + (x.c || 0), 0) },
+    servicios, mo, hayInsumos, med,
+    margenProm, fuenteMargen, necesarios, necesariosTodo, semaforo,
+    horasMes, porHora, baseHora, baseEsReal: utilReal !== null,
+    recurrentes: { pct: placas ? recur / placas * 100 : null, n: recur, total: placas },
+    cajas, pend, notas
+  };
+}
+
+// ---------- Carga y pantalla ----------
+function rentLlenarMeses() {
+  const sel = document.getElementById("rentMes");
+  if (sel.options.length) return;
+  const hoy = new Date();
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+    const o = document.createElement("option");
+    o.value = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+    o.textContent = RENT_MESES[d.getMonth()].charAt(0).toUpperCase() + RENT_MESES[d.getMonth()].slice(1) + " " + d.getFullYear() + (i === 0 ? " (este mes)" : "");
+    sel.appendChild(o);
+  }
+}
+async function loadRentabilidad() {
+  rentLlenarMeses();
+  document.getElementById("insFecha").value = document.getElementById("insFecha").value || isoDate(new Date());
+  const partes = document.getElementById("rentMes").value.split("-");
+  const y = Number(partes[0]), m = Number(partes[1]);
+  const ini3 = new Date(y, m - 3, 1), fin = new Date(y, m, 0);
+  const [cfgR, insR] = await Promise.all([apiGet("config"), apiGet("insumos")]);
+  RENT.sinBackend = !!(cfgR && cfgR.error) || !!(insR && insR.error);
+  RENT.cfg = cfgR && cfgR.config ? cfgR.config : {};
+  RENT.ins = insR && Array.isArray(insR.insumos) ? insR.insumos : [];
+  let regDesde = ini3;
+  const tope = new Date();
+  tope.setDate(tope.getDate() - 400);
+  RENT.ins.forEach((i) => {
+    const d = new Date(i.fecha + "T00:00:00");
+    if (d < regDesde && d > tope) regDesde = d;
+  });
+  const [rg, gs, hs, mv, cat] = await Promise.all([
+    apiGet("registro", { desde: isoDate(regDesde), hasta: isoDate(fin) }),
+    apiGet("gastos", { desde: isoDate(ini3), hasta: isoDate(fin) }),
+    apiGet("historico", { desde: isoDate(ini3), hasta: isoDate(fin) }),
+    apiGet("movProductos", { desde: isoDate(ini3), hasta: isoDate(fin) }),
+    apiGet("catalogo")
+  ]);
+  const reg = (rg.registro || []).map((r) => Object.assign({}, r, { _d: new Date(r["Fecha y hora"]) })).filter((r) => !isNaN(r._d));
+  reg.forEach((r) => { r._k = rentKey(r._d); });
+  const gas = (gs.gastos || []).map((g) => Object.assign({}, g, { _d: new Date(g["Fecha"]) })).filter((g) => !isNaN(g._d));
+  gas.forEach((g) => { g._k = rentKey(g._d); });
+  const movs = (mv.movimientos || []).map((x) => Object.assign({}, x, { _d: new Date(x.fecha) })).filter((x) => !isNaN(x._d));
+  movs.forEach((x) => { x._k = rentKey(x._d); });
+  RENT.insGrupos = rentInsumos(RENT.ins, reg);
+  RENT.grupos = rentGrupos(cat && cat.tabla1 ? cat : DEMO.catalogo);
+  const ctx = { hoy: new Date(), cfg: RENT.cfg, reg, gas, hist: hs, mov: movs, insGrupos: RENT.insGrupos };
+  const meses = [];
+  for (let k = 2; k >= 0; k--) {
+    const d = new Date(y, m - 1 - k, 1);
+    meses.push(rentCalcMes(ctx, d.getFullYear(), d.getMonth() + 1));
+  }
+  RENT.ctx = ctx;
+  RENT.meses = meses;
+  rentRender(meses[2], meses);
+  rentLlenarConfig();
+  rentRenderInsumos();
+}
+function rentRender(R, meses) {
+  // aviso de backend
+  let av = "";
+  if (RENT.sinBackend) av += '<div class="rent-aviso"><div>⚠️ Falta actualizar Code.gs para guardar la configuración y los insumos. El reporte se calcula con lo que ya hay.</div></div>';
+  if (R.pend.length) av += '<div class="rent-aviso">' + R.pend.map((t) => "<div>• Dato pendiente: " + escH(t) + "</div>").join("") + '<button class="secondary" style="margin-top:8px;" onclick="rentIrConfig()">⚙️ Ir a Configuración</button></div>';
+  document.getElementById("rentAvisos").innerHTML = av;
+  document.getElementById("rentNota").innerHTML = R.notas.map((t) => "• " + escH(t)).join("<br>");
+
+  // reporte mensual
+  const neg = (n) => "-" + rentMn(n);
+  let h = '<div class="rent-row"><span><b>Ingresos</b></span><span class="v" style="color:#1E8E4E;">' + rentMn(R.ingresos) + "</span></div>";
+  h += '<div class="rent-row"><span>Gastos fijos</span><span class="v">' + neg(R.fijos) + "</span></div>";
+  if (R.sueldos) h += '<div class="rent-row sub"><span>Sueldos del personal</span><span>' + neg(R.sueldos) + "</span></div>";
+  if (R.rentaEst) h += '<div class="rent-row sub"><span>Renta (estimada)</span><span>' + neg(R.rentaEst) + "</span></div>";
+  if (R.fijoReal) h += '<div class="rent-row sub"><span>Otros fijos registrados</span><span>' + neg(R.fijoReal) + "</span></div>";
+  h += '<div class="rent-row"><span>Gastos variables</span><span class="v">' + neg(R.variables) + "</span></div>";
+  if (R.aguaEst) h += '<div class="rent-row sub"><span>Agua (anual ÷ 12)</span><span>' + neg(R.aguaEst) + "</span></div>";
+  if (R.sinClasN) h += '<div class="rent-row"><span>Gastos sin clasificar</span><span class="v">' + neg(R.sinClas) + "</span></div>";
+  h += '<div class="rent-row"><span>Apartado equipo</span><span class="v">' + neg(R.equipo) + "</span></div>";
+  const clase = (n) => n >= 0 ? "good" : "bad";
+  h += '<div class="rent-row tot ' + clase(R.utilNeg) + '"><span>UTILIDAD DEL NEGOCIO<br><small style="font-weight:700;">antes de mi sueldo' + (R.ingresos > 0 ? " · " + rentPct(R.utilNeg / R.ingresos * 100) + " de los ingresos" : "") + '</small></span><span class="v">' + rentMn(R.utilNeg) + "</span></div>";
+  h += '<div class="rent-row"><span>Mi sueldo</span><span class="v">' + (R.miSueldo === null ? '<span class="pill y">Dato pendiente</span>' : neg(R.miSueldo)) + "</span></div>";
+  h += R.utilReal === null
+    ? '<div class="rent-row tot"><span>UTILIDAD REAL<br><small style="font-weight:700;">después de mi sueldo</small></span><span class="v"><span class="pill y">Dato pendiente</span></span></div>'
+    : '<div class="rent-row tot ' + clase(R.utilReal) + '"><span>UTILIDAD REAL<br><small style="font-weight:700;">después de mi sueldo</small></span><span class="v">' + rentMn(R.utilReal) + "</span></div>";
+  h += '<div class="grid2" style="margin-top:12px;">' +
+    '<div class="stat"><div class="num">' + R.lavados + '</div><div class="lab">Lavados</div></div>' +
+    '<div class="stat"><div class="num">' + (R.ticket === null ? "—" : rentMn(R.ticket)) + '</div><div class="lab">Ticket promedio</div></div>' +
+    '<div class="stat plum"><div class="num">' + R.cortesias.n + '</div><div class="lab">Cortesías' + (R.hayInsumos ? "<br>insumos " + rentMn(R.cortesias.ins) : "") + '</div></div>' +
+    '<div class="stat plum"><div class="num">' + R.canjes.n + '</div><div class="lab">Canjes' + (R.hayInsumos ? "<br>insumos " + rentMn(R.canjes.ins) : "") + "</div></div></div>";
+  document.getElementById("rentReporte").innerHTML = h;
+
+  // margen por servicio
+  const sv = R.servicios;
+  document.getElementById("rentMargen").innerHTML = !sv.length ? '<div class="empty">No hay servicios registrados en este mes.</div>' :
+    '<div class="hint" style="margin:0 0 4px;">Precio − costo de insumos − mano de obra proporcional (sueldos del mes ÷ servicios del mes = ' + rentMn(R.mo) + " por servicio). De mayor a menor margen.</div>" +
+    sv.map((s) => {
+      const cl = s.pct === null ? "y" : s.pct >= 40 ? "g" : s.pct >= 20 ? "y" : "r";
+      return '<div class="srv"><div class="t"><span>' + escH(s.n) + '</span><span>' + rentMn(s.margen) + ' <span class="pill ' + cl + '">' + (s.pct === null ? "s/precio" : rentPct(s.pct)) + '</span></span></div><div class="d">' + s.u + " vendido" + (s.u === 1 ? "" : "s") + " · precio " + rentMn(s.precio) + " − insumos " + (s.costo === null ? "⚠️ sin dato" : rentMn(s.costo)) + " − mano de obra " + rentMn(s.mo) + "</div></div>";
+    }).join("");
+
+  // punto de equilibrio
+  const eq = document.getElementById("rentEquilibrio");
+  if (R.necesarios === null) {
+    eq.innerHTML = '<div class="empty">' + (R.lavados === 0 ? "Aún no hay lavados en este mes." : R.fijos <= 0 ? "No hay gastos fijos en este mes. Registra gastos fijos (o captura la renta en Configuración)." : "El margen por lavado no alcanza para cubrir gastos fijos.") + "</div>";
+  } else {
+    const ratio = R.lavados / R.necesarios;
+    const txt = { verde: "Vas bien: ya cubriste tus gastos fijos", amarillo: "Casi llegas: te faltan " + (R.necesarios - R.lavados) + " lavados", rojo: "Por debajo del equilibrio: te faltan " + (R.necesarios - R.lavados) + " lavados" }[R.semaforo];
+    const emo = { verde: "🟢", amarillo: "🟡", rojo: "🔴" }[R.semaforo];
+    const col = { verde: "#1E8E4E", amarillo: "#E6A800", rojo: "#D93030" }[R.semaforo];
+    eq.innerHTML = '<div class="semaforo"><div class="luz ' + R.semaforo + '">' + emo + '</div><div><b>' + txt + '</b><div class="hint" style="margin:2px 0 0;">' + R.lavados + " lavados reales de " + R.necesarios + " necesarios" + (R.parcial ? " (a la fecha)" : "") + "</div></div></div>" +
+      '<div class="barra"><i style="width:' + Math.min(100, Math.round(ratio * 100)) + "%;background:" + col + ';"></i></div>' +
+      '<div class="rent-row" style="margin-top:8px;"><span>Gastos fijos del mes</span><span class="v">' + rentMn(R.fijos) + "</span></div>" +
+      '<div class="rent-row"><span>Margen promedio por lavado</span><span class="v">' + rentMn(R.margenProm) + "</span></div>" +
+      '<div class="rent-row"><span>Lavados necesarios</span><span class="v">' + R.necesarios + "</span></div>" +
+      '<div class="rent-row"><span>Lavados reales</span><span class="v">' + R.lavados + "</span></div>" +
+      (R.necesariosTodo && R.necesariosTodo > R.necesarios ? '<div class="hint">Para cubrir además el apartado de equipo' + (R.miSueldo ? " y tu sueldo" : "") + ": " + R.necesariosTodo + " lavados.</div>" : "") +
+      '<div class="hint">🟢 ya los cubres · 🟡 llevas al menos 80% · 🔴 menos de 80%.</div>';
+  }
+
+  // ganancia por hora
+  const hr = document.getElementById("rentHora");
+  hr.innerHTML = R.porHora === null
+    ? '<div class="empty">Dato pendiente: horas por semana en Configuración.</div>'
+    : '<div class="stat ' + (R.porHora >= 0 ? "green" : "red") + '"><div class="num">' + rentMn(R.porHora) + ' por hora</div><div class="lab">' + (R.baseEsReal ? "Utilidad real" : "Utilidad del negocio (falta capturar tu sueldo)") + " " + rentMn(R.baseHora) + " ÷ " + (Math.round(R.horasMes * 10) / 10) + " horas</div></div>";
+
+  // tendencia
+  const fila = (lab, f) => "<tr><td>" + lab + "</td>" + meses.map((x) => "<td>" + f(x) + "</td>").join("") + "</tr>";
+  const usaReal = meses.every((x) => x.utilReal !== null);
+  let t = '<table class="rtabla"><tr><th></th>' + meses.map((x) => "<th>" + x.corto + (x.parcial ? "*" : "") + "</th>").join("") + "</tr>";
+  t += fila("Ingresos", (x) => rentMn(x.ingresos));
+  t += fila(usaReal ? "Utilidad real" : "Utilidad negocio", (x) => '<b style="color:' + ((usaReal ? x.utilReal : x.utilNeg) >= 0 ? "#1E8E4E" : "#C01E1E") + ';">' + rentMn(usaReal ? x.utilReal : x.utilNeg) + "</b>");
+  t += fila("Lavados", (x) => x.lavados);
+  t += fila("Recurrentes", (x) => x.recurrentes.pct === null ? "—" : rentPct(x.recurrentes.pct));
+  t += "</table>";
+  const a = meses[2], b = meses[1];
+  const dl = (n, p, lab) => !p ? "" : '<span class="pill ' + (n >= p ? "g" : "r") + '">' + lab + " " + (n >= p ? "▲" : "▼") + " " + Math.abs(Math.round((n - p) / Math.abs(p) * 100)) + "%</span> ";
+  t += '<div style="margin-top:10px;">' + (a.parcial ? "" : dl(a.ingresos, b.ingresos, "Ingresos") + dl(usaReal ? a.utilReal : a.utilNeg, usaReal ? b.utilReal : b.utilNeg, "Utilidad") + dl(a.lavados, b.lavados, "Lavados")) + "</div>";
+  t += '<div class="hint">Recurrentes = placas con 2 visitas o más en el mes (' + a.recurrentes.n + " de " + a.recurrentes.total + " placas en " + a.corto + ")." + (meses.some((x) => x.parcial) ? " * Mes en curso, a la fecha." : "") + "</div>";
+  document.getElementById("rentTendencia").innerHTML = t;
+
+  // cajas de productos
+  document.getElementById("rentCajas").innerHTML = R.cajas.map((c) => {
+    const ic = c.caja === "Bebidas" ? "🥤" : "🌸";
+    const sinCosto = c.ven > 0 && c.cos === 0;
+    return '<div class="cat-group">' + ic + " " + c.caja + "</div>" +
+      '<div class="rent-row"><span>Ventas (' + c.piezas + " pzas)</span><span class=\"v\">" + rentMn(c.ven) + "</span></div>" +
+      '<div class="rent-row"><span>Costo de compra de lo vendido</span><span class="v">' + neg(c.cos) + "</span></div>" +
+      '<div class="rent-row tot ' + clase(c.ut) + '"><span>UTILIDAD</span><span class="v">' + rentMn(c.ut) + "</span></div>" +
+      '<div class="hint">Compras del mes: ' + rentMn(c.com) + " · Saldo (ventas − compras): " + rentMn(c.saldo) + "</div>" +
+      (sinCosto ? '<div class="rent-aviso" style="margin-top:8px;"><div>• Dato pendiente: costo de compra de estos productos (regístralo en Productos > Registrar compra)</div></div>' : "");
+  }).join("") + '<div class="hint">Estas cajas van aparte: no se suman a la utilidad del Autolavado.</div>';
+}
+function rentIrConfig() {
+  const c = document.getElementById("rentConfigCard");
+  c.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 updateConnBanner();
 fillTamano();
 fillServicioOtro(false);
