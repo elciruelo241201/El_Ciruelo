@@ -332,6 +332,40 @@ details.card[open] summary{margin-bottom:10px;}
 .ok6 .bigst .new{display:inline-block;transform:scale(1.25);filter:drop-shadow(0 0 6px #FFC53D);}
 .ok6 .selloMsg{font-weight:800;color:var(--agua-dark);font-size:13px;}
 .ok6 button{width:100%;}
+
+/* ===== Registrar: pasos, íconos de vehículo/tamaño y paquetes ===== */
+.card.paso{border-left:6px solid var(--agua);}
+.card.paso.p2{border-left-color:#6B2D5C;}
+.card.paso.p3{border-left-color:#FFC53D;}
+.step{display:flex;align-items:center;gap:10px;margin:0 0 10px;}
+.step .n{width:28px;height:28px;border-radius:50%;background:var(--agua);color:#fff;font-family:'Baloo 2',sans-serif;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px;flex:0 0 auto;}
+.card.paso.p2 .step .n{background:#6B2D5C;}
+.card.paso.p3 .step .n{background:#E6A800;}
+.step .n.ok{background:#1E8E4E !important;}
+.step h4{font-family:'Baloo 2',sans-serif;font-size:16px;color:var(--agua-dark);margin:0;flex:1;}
+.step small{font-size:11px;font-weight:800;color:var(--ink-soft);text-align:right;}
+.step small.ok{color:#1E8E4E;}
+.card.paso label{margin-top:14px;}
+#paso2 .step + label, #paso3 .step + label{margin-top:0;}
+#tipoChips, #ceraTipoChips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+#ceraTipoChips{grid-template-columns:repeat(2,1fr);}
+#tipoChips .chip, #ceraTipoChips .chip{border-radius:14px;padding:8px 2px 7px;text-align:center;display:flex;flex-direction:column;align-items:center;font-size:12px;line-height:1.1;}
+#tipoChips .chip span, #ceraTipoChips .chip span{font-size:26px;line-height:1.1;display:block;margin-bottom:2px;}
+#tipoChips .chip.sel, #ceraTipoChips .chip.sel{background:var(--agua-light);border-color:var(--agua);color:var(--agua-dark);box-shadow:0 3px 8px rgba(14,165,183,.2);}
+#selTamano, #selPaquete, #selCeraTamano{display:none;}
+.tiles{display:grid;gap:8px;margin-top:4px;}
+.tile{background:#fff;border:2px solid var(--line);border-radius:14px;text-align:center;padding:8px 2px 7px;font-weight:800;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer;}
+.tile .em{line-height:1;height:56px;display:flex;align-items:flex-end;justify-content:center;}
+.tile small{font-size:11px;font-weight:800;line-height:1.1;margin-top:3px;}
+.tile.sel{border-color:var(--agua);background:var(--agua-light);color:var(--agua-dark);box-shadow:0 3px 8px rgba(14,165,183,.2);}
+.tile.locked{opacity:.45;cursor:not-allowed;}
+.pkcs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;}
+.pkc{background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px;position:relative;cursor:pointer;}
+.pkc b{font-family:'Baloo 2',sans-serif;font-size:14px;color:var(--ink);display:block;line-height:1.1;}
+.pkc em{font-style:normal;font-family:'Baloo 2',sans-serif;font-size:20px;font-weight:800;color:#1E8E4E;display:block;margin-top:2px;}
+.pkc small{font-size:10.5px;color:#1E8E4E;font-weight:800;display:block;}
+.pkc.sel{border-color:var(--agua);background:var(--agua-light);}
+.pkc.sel:after{content:"✓";position:absolute;top:6px;right:8px;background:var(--agua);color:#fff;width:20px;height:20px;border-radius:50%;font-size:12px;text-align:center;line-height:20px;font-weight:800;}
 </style>
 </head>
 <body>
@@ -463,8 +497,9 @@ details.card[open] summary{margin-bottom:10px;}
   <!-- ===================== REGISTRAR ===================== -->
   <div class="view" id="view-registrar">
     <div id="regOk" style="display:none;"></div>
-    <div class="card" id="regCard">
-      <h3>📝 Nuevo registro</h3>
+    <div id="regCard">
+    <div class="card paso p1" id="paso1">
+      <div class="step"><div class="n" id="stpN1">1</div><h4>Vehículo</h4><small id="stpS1"></small></div>
       <div id="datosCliente">
       <label>Placa * (escríbela primero: el resto se llena solo)</label>
       <input id="inPlaca" type="text" placeholder="Ej. ABC1234" maxlength="8" style="text-transform:uppercase;">
@@ -476,6 +511,9 @@ details.card[open] summary{margin-bottom:10px;}
       </div>
       </div>
 
+    </div>
+    <div class="card paso p2" id="paso2">
+      <div class="step"><div class="n" id="stpN2">2</div><h4>Servicio</h4><small id="stpS2"></small></div>
       <label>Categoría *</label>
       <div class="chips" id="catChips">
         <div class="chip sel" data-v="Lavada">Lavada</div>
@@ -486,14 +524,16 @@ details.card[open] summary{margin-bottom:10px;}
       <div id="lavadaFields">
         <label>Tipo de vehículo *</label>
         <div class="chips" id="tipoChips">
-          <div class="chip sel" data-v="Coche">🚗 Coche</div>
-          <div class="chip" data-v="Camioneta">🛻 Camioneta</div>
-          <div class="chip" data-v="Moto">🏍️ Moto</div>
-          <div class="chip" data-v="Bici">🚲 Bici</div>
+          <div class="chip sel" data-v="Coche"><span>🚗</span>Coche</div>
+          <div class="chip" data-v="Camioneta"><span>🛻</span>Camioneta</div>
+          <div class="chip" data-v="Moto"><span>🏍️</span>Moto</div>
+          <div class="chip" data-v="Bici"><span>🚲</span>Bici</div>
         </div>
-        <label>Tamaño *</label>
+        <label id="tamTilesLbl">Tamaño *</label>
+        <div class="tiles" id="tamTiles"></div>
         <select id="selTamano"></select>
         <label>Paquete *</label>
+        <div class="pkcs" id="pkCards"></div>
         <select id="selPaquete"></select>
         <label>Tipo de cobro</label>
         <div class="chips" id="cobroChips">
@@ -532,10 +572,11 @@ details.card[open] summary{margin-bottom:10px;}
         <div id="ceraFields" style="display:none;">
           <label>Tipo de vehículo *</label>
           <div class="chips" id="ceraTipoChips">
-            <div class="chip sel" data-v="Coche">🚗 Coche</div>
-            <div class="chip" data-v="Camioneta">🛻 Camioneta</div>
+            <div class="chip sel" data-v="Coche"><span>🚗</span>Coche</div>
+            <div class="chip" data-v="Camioneta"><span>🛻</span>Camioneta</div>
           </div>
-          <label>Tamaño *</label>
+          <label id="ceraTilesLbl">Tamaño *</label>
+          <div class="tiles" id="ceraTiles"></div>
           <select id="selCeraTamano"></select>
         </div>
       </div>
@@ -551,6 +592,9 @@ details.card[open] summary{margin-bottom:10px;}
         <div class="hint" id="sinSelloHint" style="display:none;">🚫 Se cobra normal, pero este lavado <b>no suma sello</b> ni se guarda como cliente de la promo.</div>
       </div>
 
+    </div>
+    <div class="card paso p3" id="paso3">
+      <div class="step"><div class="n" id="stpN3">3</div><h4>Cobro y foto</h4><small id="stpS3"></small></div>
       <label id="lblFoto">Foto de evidencia *</label>
       <div class="foto-row">
         <button type="button" class="btn-foto" id="btnFoto" onclick="document.getElementById('inFoto').click()">📷 Tomar foto</button>
@@ -572,6 +616,7 @@ details.card[open] summary{margin-bottom:10px;}
       <div class="hint" id="desgloseTotal" style="display:none;"></div>
       <button class="primary" id="regGuardarBtn" onclick="guardarRegistro()">Guardar registro</button>
       <button class="secondary" onclick="abrirAjuste()">✏️ Ajustar un registro con error</button>
+    </div>
     </div>
   </div>
 
@@ -1493,6 +1538,7 @@ function go(view) {
   if (navT && tabA) navT.scrollLeft = tabA.offsetLeft - (navT.clientWidth - tabA.offsetWidth) / 2;
   if (view !== "registrar") cerrarConfirmacion();
   actualizarBarra();
+  if (view === "registrar") tickRegistrar();
   if (view === "hoy") loadHoy();
   if (view === "clientes") loadClientes();
   if (view === "productos") loadProductos();
@@ -2252,6 +2298,85 @@ function quitarFoto() {
   document.getElementById("btnFoto").textContent = "📷 Tomar foto";
   document.getElementById("btnFotoQuitar").style.display = "none";
 }
+function emoTam(tipo, nombre, i, n) {
+  if (tipo === "Moto") return { e: /taxi/i.test(nombre) ? "🛺" : "🏍️", s: 40 };
+  const e = tipo === "Camioneta" ? "🛻" : "🚗";
+  const min = n > 3 ? 26 : 30, max = 52;
+  return { e, s: n < 2 ? 40 : Math.round(min + (max - min) * i / (n - 1)) };
+}
+function renderTiles(selId, boxId, tipoFn) {
+  const sel = document.getElementById(selId), box = document.getElementById(boxId);
+  if (!sel || !box) return;
+  const opts = Array.prototype.slice.call(sel.options), tipo = tipoFn();
+  const sig = [tipo, sel.value, sel.disabled, opts.map((o) => o.value).join("|")].join("#");
+  if (box.getAttribute("data-sig") === sig) return;
+  box.setAttribute("data-sig", sig);
+  const lbl = document.getElementById(boxId.replace("Tiles", "TilesLbl"));
+  const oculto = opts.length <= 1;
+  box.style.display = oculto ? "none" : "grid";
+  if (lbl) lbl.style.display = oculto ? "none" : "";
+  box.style.gridTemplateColumns = "repeat(" + Math.min(4, Math.max(1, opts.length)) + ",1fr)";
+  box.innerHTML = opts.map((o, i) => {
+    const t = emoTam(tipo, o.textContent, i, opts.length);
+    return '<div class="tile' + (o.value === sel.value ? " sel" : "") + (sel.disabled && o.value !== sel.value ? " locked" : "") + '" data-v="' + escH(o.value) + '"><span class="em" style="font-size:' + t.s + 'px">' + t.e + "</span><small>" + escH(o.textContent) + "</small></div>";
+  }).join("");
+  Array.prototype.forEach.call(box.querySelectorAll(".tile"), (el) => el.addEventListener("click", () => {
+    if (sel.disabled || el.classList.contains("locked")) return;
+    sel.value = el.getAttribute("data-v");
+    sel.dispatchEvent(new Event("change", { bubbles: true }));
+    box.setAttribute("data-sig", "");
+    renderTiles(selId, boxId, tipoFn);
+  }));
+}
+function renderPaqCards() {
+  const sel = document.getElementById("selPaquete"), box = document.getElementById("pkCards");
+  if (!sel || !box) return;
+  const opts = Array.prototype.slice.call(sel.options), bici = esBici();
+  const sig = [sel.value, bici, opts.map((o) => o.value + o.textContent).join("|")].join("#");
+  if (box.getAttribute("data-sig") === sig) return;
+  box.setAttribute("data-sig", sig);
+  box.innerHTML = opts.map((o) => '<div class="pkc' + (o.value === sel.value ? " sel" : "") + '" data-v="' + escH(o.value) + '"><b>' + escH(o.textContent.split(" — ")[0]) + "</b><em>" + money(o.getAttribute("data-precio")) + "</em>" + (o.value === "basico" && !bici ? "<small>⭐ Suma sello</small>" : "") + "</div>").join("");
+  Array.prototype.forEach.call(box.querySelectorAll(".pkc"), (el) => el.addEventListener("click", () => {
+    sel.value = el.getAttribute("data-v");
+    sel.dispatchEvent(new Event("change", { bubbles: true }));
+    box.setAttribute("data-sig", "");
+    renderPaqCards();
+  }));
+}
+function marcarPaso(n, ok, txtFalta) {
+  const nn = document.getElementById("stpN" + n), ss = document.getElementById("stpS" + n);
+  if (!nn || !ss) return;
+  nn.classList.toggle("ok", !!ok);
+  nn.textContent = ok ? "✓" : String(n);
+  ss.classList.toggle("ok", !!ok);
+  ss.textContent = ok ? "✓ Listo" : txtFalta;
+}
+function actualizarPasos() {
+  const lav = chipVal("catChips") === "Lavada";
+  const placa = document.getElementById("inPlaca").value.trim();
+  marcarPaso(1, placa.length >= 5 || (lav && esBici()), "Escribe la placa");
+  let ok2;
+  if (lav) ok2 = !!document.getElementById("selPaquete").value;
+  else {
+    const v = document.getElementById("selServicioOtro").value;
+    ok2 = !!v && (v !== "VARIADO" || !!document.getElementById("inVariadoComentario").value.trim());
+  }
+  marcarPaso(2, ok2, "Elige el servicio");
+  let tieneMonto = false;
+  try {
+    tieneMonto = esCanje() || esCortesia() || Number(document.getElementById("inMonto").value) > 0;
+  } catch (e) {
+  }
+  marcarPaso(3, !!fotoDataUrl && tieneMonto, !fotoDataUrl ? "Falta la foto" : "Falta el monto");
+}
+function tickRegistrar() {
+  if (!document.getElementById("view-registrar").classList.contains("active")) return;
+  renderTiles("selTamano", "tamTiles", () => chipVal("tipoChips"));
+  renderTiles("selCeraTamano", "ceraTiles", () => chipVal("ceraTipoChips"));
+  renderPaqCards();
+  actualizarPasos();
+}
+setInterval(tickRegistrar, 300);
 function actualizarBarra() {
   const bar = document.getElementById("barraReg");
   if (!bar) return;
