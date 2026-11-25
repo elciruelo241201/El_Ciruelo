@@ -2125,8 +2125,9 @@ function mostrarSellosPlaca(c, placa) {
   if (c.tipo) chips.push((({ Moto: "🏍️", Coche: "🚗", Camioneta: "🛻", Bici: "🚲" })[c.tipo] || "🚗") + " " + escH(c.tipo) + (c.tamano && c.tamano !== c.tipo ? " · " + escH(c.tamano) : ""));
   if (String(c.celular || "").trim()) chips.push("📞 Celular guardado");
   let html = '<div class="cli"><div class="cli-top"><div class="cli-av">' + (nom ? escH(nom.charAt(0).toUpperCase()) : "🚗") + '</div><div><div class="cli-nm">' + escH(nom || "Cliente") + '</div><span class="cli-pl">' + escH(placa) + '</span></div></div><div class="cli-st"><span class="stars">' + st + '</span><span class="n">' + n + "/" + SELLOS_PROMO + "</span></div>" + ult + (chips.length ? '<div class="cli-btn">' + chips.map((x) => "<span>" + x + "</span>").join("") + "</div>" : "") + "</div>";
+  const esMoto = (c.tipo || chipVal("tipoChips")) === "Moto";
   if (v >= SELLOS_PROMO) {
-    html += esFinDeSemana() ? '<div class="canje-banner fin"><big>🎁</big><div>Ya completó sus 5 sellos<small>El canje es de lunes a viernes: hoy se registra como sello normal.</small></div></div>' : '<div class="canje-banner"><big>🎁</big><div>¡Toca lavado gratis!<small>Canje de promo disponible (lun–vie) · moto al 50%</small></div></div>';
+    html += esFinDeSemana() ? '<div class="canje-banner fin"><big>🎁</big><div>Ya completó sus 5 sellos<small>El canje es de lunes a viernes: hoy se registra como sello normal.</small></div></div>' : '<div class="canje-banner"><big>🎁</big><div>' + (esMoto ? "¡Toca su canje: 50% de descuento!<small>Promo disponible (lun–vie): el lavado de su moto va con 50% de descuento</small>" : "¡Toca lavado GRATIS!<small>Canje de promo disponible (lun–vie)</small>") + '</div></div>';
   }
   box.innerHTML = html;
 }
@@ -2293,7 +2294,7 @@ function mostrarConfirmacion(i) {
   const pago = i.pago === "Tarjeta" ? "💳 Tarjeta" : "💵 Efectivo";
   let sello = "";
   if (i.tipoSello === "Canje") {
-    sello = '<div class="selloMsg">🎁 ¡Lavado gratis entregado!</div><p style="margin-top:4px;">La tarjeta vuelve a 0</p>';
+    sello = '<div class="selloMsg">' + (i.tipoVehiculo === "Moto" ? "🎁 ¡Canje con 50% de descuento aplicado!" : "🎁 ¡Lavado gratis entregado!") + '</div><p style="margin-top:4px;">La tarjeta vuelve a 0</p>';
   } else if (i.tipoSello === "Cortesía") {
     sello = '<p>🤝 Cortesía: no suma sello ni se cobra.</p>';
   } else if (i.esBasico && i.tipoSello === "Sin sello") {
