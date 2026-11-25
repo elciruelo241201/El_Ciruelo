@@ -292,6 +292,46 @@ details.card[open] summary{margin-bottom:10px;}
 .reg.slim .reg-t{font-size:13px; font-weight:700;} .reg.slim .reg-r b{font-size:14px; color:#C01E1E;}
 .vacio{text-align:center; padding:18px 8px 6px; color:var(--ink-soft); font-weight:700; font-size:13.5px;}
 .vacio .big{font-size:38px; display:block; margin-bottom:4px;}
+
+/* ===== Registrar: tarjeta de cliente, barra fija y confirmación ===== */
+.cli-wrap{margin-top:10px; margin-bottom:6px;}
+.cli{border-radius:18px;padding:14px;background:linear-gradient(135deg,#0EA5B7,#06647A);color:#fff;box-shadow:0 6px 16px rgba(6,100,122,.25);}
+.cli.nuevo{background:linear-gradient(135deg,#8AA6AD,#5C8089);box-shadow:none;}
+.cli-top{display:flex;align-items:center;gap:12px;}
+.cli-av{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:22px;flex:0 0 auto;}
+.cli-nm{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:18px;line-height:1.05;word-break:break-word;}
+.cli-pl{display:inline-block;background:#0B3B45;border-radius:5px;padding:0 6px;font-size:11px;letter-spacing:1px;font-weight:800;margin-top:3px;}
+.cli-st{margin-top:10px;display:flex;align-items:center;gap:8px;font-weight:800;}
+.cli-st .stars{font-size:22px;letter-spacing:2px;color:#FFC53D;}
+.cli-st .stars .off{color:rgba(255,255,255,.35);}
+.cli-st .n{font-family:'Baloo 2',sans-serif;font-size:16px;}
+.cli-meta{font-size:12px;opacity:.95;margin-top:6px;font-weight:700;}
+.cli-btn{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;}
+.cli-btn span{flex:1 1 auto;text-align:center;background:rgba(255,255,255,.18);border-radius:11px;padding:7px 8px;font-size:12px;font-weight:800;}
+.canje-banner{margin-top:10px;background:linear-gradient(135deg,#FFE08A,#FFC53D);color:#6B4300;border-radius:14px;padding:10px 12px;font-weight:800;display:flex;align-items:center;gap:10px;font-size:14px;box-shadow:0 4px 12px rgba(230,168,0,.35);}
+.canje-banner big{font-size:26px;}
+.canje-banner small{display:block;font-weight:700;font-size:11.5px;opacity:.85;line-height:1.3;}
+.canje-banner.fin{background:#FFF3CF;box-shadow:none;border:2px solid #E6A800;}
+#regTotalBox,#regGuardarBtn{display:none;}
+#view-registrar{padding-bottom:92px;}
+.barra-reg{position:fixed;left:0;right:0;bottom:64px;z-index:45;background:#fff;border-top:2px solid var(--line);padding:9px 14px;display:none;align-items:center;gap:12px;box-shadow:0 -6px 16px rgba(6,100,122,.12);}
+.barra-reg .tot small{display:block;font-size:11px;font-weight:800;color:var(--ink-soft);}
+.barra-reg .tot b{font-family:'Baloo 2',sans-serif;font-size:26px;color:var(--ink);line-height:1;}
+.barra-reg button{flex:1;margin:0;border:0;border-radius:14px;background:var(--agua);color:#fff;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:17px;padding:12px;box-shadow:0 4px 0 #06647A;cursor:pointer;}
+.barra-reg button:active{transform:translateY(2px);box-shadow:0 2px 0 #06647A;}
+.barra-reg.canje{border-top-color:#E6A800;}
+.barra-reg.canje .tot b{color:#8A5A00;}
+.barra-reg.canje button{background:#E6A800;box-shadow:0 4px 0 #8A5A00;}
+.ok6{background:#fff;border:2px solid #BEE8CF;border-radius:22px;padding:22px 16px;text-align:center;margin-top:4px;}
+.ok6 .ck{width:72px;height:72px;border-radius:50%;background:#1E8E4E;color:#fff;font-size:40px;line-height:72px;margin:0 auto 8px;box-shadow:0 0 0 8px #DDF3E6;}
+.ok6 h2{font-family:'Baloo 2',sans-serif;font-size:24px;color:#1E8E4E;margin:4px 0 2px;}
+.ok6 p{margin:0;color:var(--ink-soft);font-weight:700;font-size:13px;}
+.ok6 .res{background:var(--cream);border-radius:14px;padding:10px;margin:14px 0;font-weight:800;font-size:13px;line-height:1.5;}
+.ok6 .bigst{font-size:30px;letter-spacing:3px;color:#FFC53D;margin:6px 0 0;}
+.ok6 .bigst .off{color:#dbe7ea;}
+.ok6 .bigst .new{display:inline-block;transform:scale(1.25);filter:drop-shadow(0 0 6px #FFC53D);}
+.ok6 .selloMsg{font-weight:800;color:var(--agua-dark);font-size:13px;}
+.ok6 button{width:100%;}
 </style>
 </head>
 <body>
@@ -422,7 +462,8 @@ details.card[open] summary{margin-bottom:10px;}
 
   <!-- ===================== REGISTRAR ===================== -->
   <div class="view" id="view-registrar">
-    <div class="card">
+    <div id="regOk" style="display:none;"></div>
+    <div class="card" id="regCard">
       <h3>📝 Nuevo registro</h3>
       <div id="datosCliente">
       <label>Placa * (escríbela primero: el resto se llena solo)</label>
@@ -527,9 +568,9 @@ details.card[open] summary{margin-bottom:10px;}
       <label>Monto cobrado (MXN) *</label>
       <input id="inMonto" type="number" inputmode="decimal" placeholder="0">
 
-      <div class="total-box"><span>Total a cobrar</span><span class="amt" id="montoPreview">$0</span></div>
+      <div class="total-box" id="regTotalBox"><span>Total a cobrar</span><span class="amt" id="montoPreview">$0</span></div>
       <div class="hint" id="desgloseTotal" style="display:none;"></div>
-      <button class="primary" onclick="guardarRegistro()">Guardar registro</button>
+      <button class="primary" id="regGuardarBtn" onclick="guardarRegistro()">Guardar registro</button>
       <button class="secondary" onclick="abrirAjuste()">✏️ Ajustar un registro con error</button>
     </div>
   </div>
@@ -706,6 +747,7 @@ details.card[open] summary{margin-bottom:10px;}
   </div>
 </div>
 
+<div class="barra-reg" id="barraReg"><div class="tot"><small>Total a cobrar</small><b id="barTotal">$0</b></div><button type="button" id="barBtn" onclick="guardarRegistro()">Guardar registro</button></div>
 <nav class="tabbar">
   <button data-v="hoy" class="active"><span class="ic">💧</span>Hoy</button>
   <button data-v="registrar"><span class="ic">📝</span>Registrar</button>
@@ -1449,6 +1491,8 @@ function go(view) {
   document.querySelectorAll("nav.tabbar button").forEach((b) => b.classList.toggle("active", b.dataset.v === view));
   const navT = document.querySelector("nav.tabbar"), tabA = document.querySelector("nav.tabbar button.active");
   if (navT && tabA) navT.scrollLeft = tabA.offsetLeft - (navT.clientWidth - tabA.offsetWidth) / 2;
+  if (view !== "registrar") cerrarConfirmacion();
+  actualizarBarra();
   if (view === "hoy") loadHoy();
   if (view === "clientes") loadClientes();
   if (view === "productos") loadProductos();
@@ -2062,26 +2106,29 @@ document.getElementById("inPlaca").addEventListener("input", (e) => {
 });
 function mostrarSellosPlaca(c, placa) {
   const box = document.getElementById("placaSellos");
-  if (!placa) {
+  if (!placa || placa.length < 5) {
     box.style.display = "none";
     return;
   }
-  if (placa.length < 5) {
-    box.style.display = "none";
-    return;
-  }
-  box.style.display = "flex";
+  box.style.display = "block";
+  box.className = "cli-wrap";
   if (!c) {
-    box.className = "placa-sellos nuevo";
-    box.innerHTML = "🆕 Cliente nuevo · 0 de 5 sellos";
+    box.innerHTML = '<div class="cli nuevo"><div class="cli-top"><div class="cli-av">🆕</div><div><div class="cli-nm">Cliente nuevo</div><span class="cli-pl">' + escH(placa) + '</span></div></div><div class="cli-meta">Este será su primer sello (0 de 5)</div></div>';
     return;
   }
-  const v = Number(c.visitas) || 0;
-  let st = "";
-  for (let i = 1; i <= 5; i++) st += '<div class="stamp '.concat(i <= v ? "filled" : "", '">').concat(i <= v ? '<img class="stamp-logo" src="'.concat(LOGO_SRC, '">') : "", "</div>");
-  st += '<div class="stamp '.concat(v >= SELLOS_PROMO ? "gift" : "", '">🎁</div>');
-  box.className = "placa-sellos" + (v >= SELLOS_PROMO ? " lista" : "");
-  box.innerHTML = "<span>".concat(c.nombre ? c.nombre + " · " : "").concat(v >= SELLOS_PROMO ? v + " sellos · ¡Esta es su 6ta, va gratis! 🎁" + (esFinDeSemana() ? " Se canjea de lunes a viernes — hoy suma sello normal." : "") : v + " de 5 sellos", '</span><div class="mini-stamps">').concat(st, "</div>");
+  const v = Number(c.visitas) || 0, n = Math.min(v, SELLOS_PROMO);
+  const nom = String(c.nombre || "").trim();
+  let st = "★".repeat(n) + '<span class="off">' + "★".repeat(SELLOS_PROMO - n) + "</span>";
+  const dias = c.dias === "" || c.dias == null || isNaN(Number(c.dias)) ? null : Number(c.dias);
+  const ult = dias === null ? "" : '<div class="cli-meta">🕐 Última visita: ' + (dias <= 0 ? "hoy" : dias === 1 ? "ayer" : "hace " + dias + " días") + "</div>";
+  const chips = [];
+  if (c.tipo) chips.push((({ Moto: "🏍️", Coche: "🚗", Camioneta: "🛻", Bici: "🚲" })[c.tipo] || "🚗") + " " + escH(c.tipo) + (c.tamano && c.tamano !== c.tipo ? " · " + escH(c.tamano) : ""));
+  if (String(c.celular || "").trim()) chips.push("📞 Celular guardado");
+  let html = '<div class="cli"><div class="cli-top"><div class="cli-av">' + (nom ? escH(nom.charAt(0).toUpperCase()) : "🚗") + '</div><div><div class="cli-nm">' + escH(nom || "Cliente") + '</div><span class="cli-pl">' + escH(placa) + '</span></div></div><div class="cli-st"><span class="stars">' + st + '</span><span class="n">' + n + "/" + SELLOS_PROMO + "</span></div>" + ult + (chips.length ? '<div class="cli-btn">' + chips.map((x) => "<span>" + x + "</span>").join("") + "</div>" : "") + "</div>";
+  if (v >= SELLOS_PROMO) {
+    html += esFinDeSemana() ? '<div class="canje-banner fin"><big>🎁</big><div>Ya completó sus 5 sellos<small>El canje es de lunes a viernes: hoy se registra como sello normal.</small></div></div>' : '<div class="canje-banner"><big>🎁</big><div>¡Toca lavado gratis!<small>Canje de promo disponible (lun–vie) · moto al 50%</small></div></div>';
+  }
+  box.innerHTML = html;
 }
 async function checkPlacaSellos() {
   const placa = document.getElementById("inPlaca").value.trim();
@@ -2203,6 +2250,66 @@ function quitarFoto() {
   document.getElementById("btnFoto").classList.remove("taken");
   document.getElementById("btnFoto").textContent = "📷 Tomar foto";
   document.getElementById("btnFotoQuitar").style.display = "none";
+}
+function actualizarBarra() {
+  const bar = document.getElementById("barraReg");
+  if (!bar) return;
+  const ok = document.getElementById("regOk");
+  const activo = document.getElementById("view-registrar").classList.contains("active") && (!ok || ok.style.display === "none");
+  bar.style.display = activo ? "flex" : "none";
+  const nav = document.querySelector("nav.tabbar");
+  bar.style.bottom = (nav ? nav.offsetHeight : 64) + "px";
+  document.getElementById("barTotal").textContent = document.getElementById("montoPreview").textContent;
+  let canje = false, cort = false;
+  try {
+    canje = esCanje();
+    cort = esCortesia();
+  } catch (e) {
+  }
+  bar.classList.toggle("canje", !!canje);
+  document.getElementById("barBtn").textContent = canje ? "Guardar canje" : cort ? "Guardar cortesía" : "Guardar registro";
+}
+(function () {
+  const v = document.getElementById("view-registrar");
+  const mp = document.getElementById("montoPreview");
+  if (window.MutationObserver) new MutationObserver(actualizarBarra).observe(mp, { childList: true, characterData: true, subtree: true });
+  ["click", "input", "change"].forEach((ev) => v.addEventListener(ev, () => setTimeout(actualizarBarra, 0)));
+  window.addEventListener("resize", actualizarBarra);
+})();
+function cerrarConfirmacion() {
+  const ok = document.getElementById("regOk");
+  if (!ok || ok.style.display === "none") return;
+  ok.style.display = "none";
+  ok.innerHTML = "";
+  document.getElementById("regCard").style.display = "";
+  actualizarBarra();
+}
+function mostrarConfirmacion(i) {
+  const ok = document.getElementById("regOk");
+  const titulo = i.tipoSello === "Canje" ? "¡Canje registrado!" : i.tipoSello === "Cortesía" ? "¡Cortesía registrada!" : "¡Listo, registrado!";
+  const quien = [i.placa, i.nombre].filter(Boolean).map(escH).join(" · ");
+  const veh = [i.tipoVehiculo, i.tamano && i.tamano !== i.tipoVehiculo ? i.tamano : ""].filter(Boolean).map(escH).join(" ");
+  const linea1 = escH(i.servicio) + (veh ? " · " + veh : "") + (i.extras ? " + " + i.extras + " extra" + (i.extras > 1 ? "s" : "") : "");
+  const pago = i.pago === "Tarjeta" ? "💳 Tarjeta" : "💵 Efectivo";
+  let sello = "";
+  if (i.tipoSello === "Canje") {
+    sello = '<div class="selloMsg">🎁 ¡Lavado gratis entregado!</div><p style="margin-top:4px;">La tarjeta vuelve a 0</p>';
+  } else if (i.tipoSello === "Cortesía") {
+    sello = '<p>🤝 Cortesía: no suma sello ni se cobra.</p>';
+  } else if (i.esBasico && i.tipoSello === "Sin sello") {
+    sello = '<p>🚫 Sin sello: este lavado no suma a la tarjeta.</p>';
+  } else if (i.esBasico && i.tipoSello === "Sello") {
+    const n = Math.min(SELLOS_PROMO, i.visPrev + 1), nuevo = i.visPrev < SELLOS_PROMO;
+    let st = "";
+    for (let k = 1; k <= SELLOS_PROMO; k++) st += k < n || (k === n && !nuevo) ? "★" : k === n ? '<span class="new">★</span>' : '<span class="off">★</span>';
+    const falta = SELLOS_PROMO - n;
+    sello = '<div class="selloMsg">Sello sumado a su tarjeta</div><div class="bigst">' + st + '</div><p style="margin-top:4px;"><b style="color:var(--ink)">' + n + "/" + SELLOS_PROMO + "</b> · " + (falta > 0 ? "le falta" + (falta > 1 ? "n " : " ") + falta + " para su lavado gratis 🎁" : "¡ya completó sus 5! Su próximo lavado va gratis 🎁") + "</p>";
+  }
+  ok.innerHTML = '<div class="ok6"><div class="ck">✓</div><h2>' + titulo + "</h2>" + (quien ? "<p>" + quien + "</p>" : "") + '<div class="res">' + linea1 + "<br>" + pago + ' · <span style="color:#1E8E4E">' + (i.total > 0 ? "+" + money(i.total) : "$0") + "</span></div>" + sello + '<div style="height:16px"></div><button class="primary" onclick="cerrarConfirmacion();window.scrollTo(0,0);">➕ Registrar otro</button><button class="secondary" onclick="cerrarConfirmacion();go(\'hoy\');">📊 Ver Hoy</button></div>';
+  document.getElementById("regCard").style.display = "none";
+  ok.style.display = "block";
+  actualizarBarra();
+  window.scrollTo(0, 0);
 }
 async function guardarRegistro() {
   const categoria = chipVal("catChips");
@@ -2366,6 +2473,7 @@ async function guardarRegistro() {
     }
   }
   const infoWhats = { tipoSello: tipoSelloCanje, celular: payload.celular, nombre: payload.nombre, placa, tipoVehiculo };
+  const infoOk = { tipoSello: tipoSelloCanje, nombre: payload.nombre, placa, servicio, tipoVehiculo, tamano, extras: extras.length, pago: payload.formaPago, total: esCort ? 0 : Number(monto), visPrev: currentCliente ? Number(currentCliente.visitas) || 0 : 0, esBasico };
   showToast(extras.length ? "¡Registrado con ".concat(extras.length, " extra").concat(extras.length > 1 ? "s" : "", "! 💧") : "¡Registrado! 💧");
   document.querySelector('#extraChips .chip[data-v="No"]').click();
   document.querySelector('#cobroChips .chip[data-v="Normal"]').click();
@@ -2384,7 +2492,7 @@ async function guardarRegistro() {
   if (document.querySelector('#selPaquete option[value="basico"]')) document.getElementById("selPaquete").value = "basico";
   currentCliente = null;
   updateCanjeLock();
-  go("hoy");
+  mostrarConfirmacion(infoOk);
   ofrecerWhatsApp(infoWhats);
 }
 let buscarTimer = null;
