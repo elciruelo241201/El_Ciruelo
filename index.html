@@ -227,6 +227,71 @@ nav.tabbar button{flex:1 0 auto;}
 .rtabla th{font-size:11.5px; color:var(--ink-soft); text-transform:uppercase;}
 details.cfg{border:2px solid var(--line); border-radius:12px; padding:9px 11px; margin-top:8px;}
 details.cfg summary{font-weight:800; font-size:13.5px; cursor:pointer;}
+/* Hoy visual */
+.hero{background:linear-gradient(140deg,#0EA5B7 0%,#06647A 100%); color:#fff; border-radius:22px; padding:16px 16px 14px; margin-bottom:12px; box-shadow:0 8px 18px rgba(6,100,122,0.25);}
+.hero-date{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:15px; opacity:.95;}
+.hero-num{font-family:'Baloo 2',sans-serif; font-weight:800; font-size:44px; line-height:1.05; margin-top:2px;}
+.hero-lab{font-size:12px; font-weight:800; opacity:.85; margin-top:-2px;}
+.splitbar{height:10px; border-radius:8px; background:rgba(255,255,255,.35); overflow:hidden; margin-top:12px;}
+.splitbar i{display:block; height:100%; background:#FFC53D; border-radius:8px; width:0;}
+.split-leg{display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-top:6px; opacity:.95;}
+.hero-chips{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:12px;}
+.hchip{background:rgba(255,255,255,.16); border-radius:14px; padding:9px 4px; text-align:center;}
+.hchip b{display:block; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:18px; line-height:1.1;}
+.hchip small{display:block; font-size:10.5px; font-weight:800; opacity:.85; margin-top:1px;}
+.hchip.red b{color:#FFD1D1;} .hchip.green b{color:#B8F5CF;}
+.hchip.neg{background:rgba(214,69,69,.55);} .hchip.neg b{color:#fff;}
+.hero .hint{color:#fff; opacity:.9;}
+.quick{display:grid; grid-template-columns:1.25fr 1fr 1fr; gap:10px; margin-bottom:12px;}
+.quick button{border:2px solid var(--line); background:#fff; border-radius:18px; padding:12px 6px; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:13.5px; color:var(--agua-dark); line-height:1.15; cursor:pointer; box-shadow:0 3px 8px rgba(14,165,183,.12);}
+.quick button span{display:block; font-size:26px; margin-bottom:2px;}
+.quick button:active{transform:scale(.97);}
+.quick button.main{background:var(--agua); border-color:var(--agua); color:#fff; box-shadow:0 5px 12px rgba(14,165,183,.4);}
+.vtiles{display:grid; grid-template-columns:repeat(3,1fr); gap:8px;}
+.vt{background:var(--agua-light); border-radius:16px; padding:10px 4px; text-align:center;}
+.vt .e{display:block; font-size:24px;}
+.vt b{display:block; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:24px; color:var(--agua-dark); line-height:1.1;}
+.vt small{display:block; font-size:10.5px; font-weight:800; color:var(--ink-soft);}
+details.card summary{list-style:none; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:8px; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:14.5px; color:var(--agua-dark);}
+details.card summary::-webkit-details-marker{display:none;}
+details.card summary .res{font-family:'Nunito',sans-serif; font-size:12.5px; font-weight:800; color:var(--green); white-space:nowrap;}
+details.card summary::after{content:"▾"; color:var(--ink-soft); margin-left:4px;}
+details.card[open] summary::after{content:"▴";}
+details.card[open] summary{margin-bottom:10px;}
+.avs{display:flex; flex-wrap:wrap; gap:12px;}
+.av{display:flex; flex-direction:column; align-items:center; width:64px; position:relative;}
+.av .c{width:46px; height:46px; border-radius:50%; background:linear-gradient(145deg,var(--agua),var(--agua-dark)); color:#fff; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:19px; display:flex; align-items:center; justify-content:center;}
+.av.no .c{background:#C9D6D9;}
+.av small{font-size:11.5px; font-weight:800; margin-top:3px; color:var(--ink);}
+.av i{position:absolute; top:-4px; right:6px; font-style:normal; font-size:15px;}
+.fchips{display:flex; gap:6px; overflow-x:auto; padding:2px 0 8px; margin:-2px 0 4px; scrollbar-width:none;}
+.fchips::-webkit-scrollbar{display:none;}
+.fchip{flex:0 0 auto; padding:6px 11px; border-radius:999px; border:2px solid var(--line); background:#fff; font-weight:800; font-size:12px; color:var(--ink-soft); cursor:pointer; white-space:nowrap;}
+.fchip.sel{background:var(--agua); border-color:var(--agua); color:#fff;}
+.fchip em{font-style:normal; opacity:.75; margin-left:3px;}
+.reg{display:flex; align-items:center; gap:10px; padding:10px 10px 10px 8px; border-radius:16px; background:#fff; border:2px solid var(--line); border-left:6px solid var(--agua); margin-bottom:8px;}
+.reg.canje{border-left-color:#E6A800; background:#FFFBEE;}
+.reg.cortesia{border-left-color:#8E5BA6; background:#FAF5FC;}
+.reg.sinsello{border-left-color:#B5C1C4; background:#F7F9F9;}
+.reg-ico{width:42px; height:42px; border-radius:14px; background:var(--agua-light); display:flex; align-items:center; justify-content:center; font-size:23px; flex:0 0 auto;}
+.reg.canje .reg-ico{background:#FFF0C2;} .reg.cortesia .reg-ico{background:#EEDDF5;} .reg.sinsello .reg-ico{background:#E9EEEF;}
+.reg-main{flex:1; min-width:0;}
+.reg-t{font-weight:800; font-size:14px; color:var(--ink); line-height:1.25;}
+.reg-t .tag{display:inline-block; font-size:10.5px; font-weight:800; background:#EEF4F5; color:var(--ink-soft); padding:1px 7px; border-radius:7px; margin-left:3px; vertical-align:1px;}
+.reg-t .tag.gold{background:#FFE8A3; color:#8A5A00;} .reg-t .tag.plum{background:#EEDDF5; color:#6B2D5C;} .reg-t .tag.gray{background:#E4EAEB; color:#5C8089;}
+.reg-s{font-size:11.5px; font-weight:700; color:var(--ink-soft); margin-top:3px; display:flex; flex-wrap:wrap; align-items:center; gap:3px 7px;}
+.plate{background:var(--ink); color:#fff; border-radius:5px; padding:0 6px; font-size:10.5px; letter-spacing:1px; font-weight:800;}
+.stars{color:#E6A800; letter-spacing:1px; font-size:12px;} .stars .off{color:#D3DDE0;}
+.reg-r{text-align:right; flex:0 0 auto;}
+.reg-r b{display:block; font-family:'Baloo 2',sans-serif; font-weight:800; font-size:17px; color:#1E8E4E; line-height:1.1;}
+.reg.cortesia .reg-r b, .reg.sinsello .reg-r b{color:#6B7B80;}
+.reg-r small{font-size:13px;}
+.reg-r button{border:2px solid var(--line); background:#fff; border-radius:9px; padding:1px 7px; font-size:13px; margin-top:3px; cursor:pointer;}
+.reg.slim{padding:7px 10px; border-left-color:#E48A8A; background:#FFF7F7; margin-bottom:6px;}
+.reg.slim .reg-ico{width:30px; height:30px; font-size:16px; border-radius:10px; background:#FDE3E3;}
+.reg.slim .reg-t{font-size:13px; font-weight:700;} .reg.slim .reg-r b{font-size:14px; color:#C01E1E;}
+.vacio{text-align:center; padding:18px 8px 6px; color:var(--ink-soft); font-weight:700; font-size:13.5px;}
+.vacio .big{font-size:38px; display:block; margin-bottom:4px;}
 </style>
 </head>
 <body>
@@ -248,28 +313,34 @@ details.cfg summary{font-weight:800; font-size:13.5px; cursor:pointer;}
 
   <!-- ===================== HOY ===================== -->
   <div class="view active" id="view-hoy">
-    <div class="card">
-      <h3>💧 Hoy, <span id="hoyFecha"></span></h3>
-      <div class="grid2">
-        <div class="stat green"><div class="num" id="hIngresos">—</div><div class="lab">Ingresos</div></div>
-        <div class="stat red"><div class="num" id="hGastos">—</div><div class="lab" id="hGastosLab">Gastos (incl. sueldos)</div></div>
-        <div class="stat green" id="hUtilidadBox"><div class="num" id="hUtilidad">—</div><div class="lab">Utilidad</div></div>
-        <div class="stat"><div class="num" id="hServicios">—</div><div class="lab">Servicios</div></div>
+    <div class="hero">
+      <div class="hero-date">💧 Hoy, <span id="hoyFecha"></span></div>
+      <div class="hero-num" id="hIngresos">—</div>
+      <div class="hero-lab">Ingresos de hoy</div>
+      <div class="hero-chips">
+        <div class="hchip red"><b id="hGastos">—</b><small id="hGastosLab">Gastos</small></div>
+        <div class="hchip green" id="hUtilidadBox"><b id="hUtilidad">—</b><small>Utilidad</small></div>
+        <div class="hchip"><b id="hServicios">—</b><small>Servicios</small></div>
       </div>
       <div class="hint solo-admin" id="hCortesias" style="display:none; margin-top:10px;"></div>
     </div>
+    <div class="quick">
+      <button class="main" onclick="go('registrar')"><span>📝</span>Registrar servicio</button>
+      <button onclick="go('productos')"><span>🛒</span>Vender producto</button>
+      <button onclick="go('asistencia')"><span>👷</span>Asistencia</button>
+    </div>
     <div class="card">
       <h3>🧽 Lavadas de hoy</h3>
-      <div class="grid2">
-        <div class="stat"><div class="num" id="hAutos">—</div><div class="lab">Coche / camioneta</div></div>
-        <div class="stat"><div class="num" id="hMotos">—</div><div class="lab">Moto</div></div>
-        <div class="stat"><div class="num" id="hBicis">—</div><div class="lab">Bici</div></div>
+      <div class="vtiles">
+        <div class="vt"><span class="e">🚗</span><b id="hAutos">—</b><small>Coche / camioneta</small></div>
+        <div class="vt"><span class="e">🏍️</span><b id="hMotos">—</b><small>Moto</small></div>
+        <div class="vt"><span class="e">🚲</span><b id="hBicis">—</b><small>Bici</small></div>
       </div>
     </div>
-    <div class="card" id="hoyProdCard">
-      <h3>🛒 Productos de hoy</h3>
+    <details class="card" id="hoyProdCard">
+      <summary><span>🛒 Productos de hoy</span><span class="res" id="hoyProdResumen"></span></summary>
       <div id="hoyProd"><div class="empty">Cargando…</div></div>
-    </div>
+    </details>
     <div class="card">
       <h3>👷 Personal de hoy</h3>
       <div id="hoyAsistencia"><div class="empty">Cargando…</div></div>
@@ -295,9 +366,9 @@ details.cfg summary{font-weight:800; font-size:13.5px; cursor:pointer;}
     </div>
     <div class="card">
       <h3>📋 Registro del día</h3>
+      <div class="fchips" id="hoyFiltro"></div>
       <div id="hoyRegistros"><div class="empty">Cargando…</div></div>
     </div>
-    <button class="primary" onclick="go('registrar')">+ Registrar lavado o servicio</button>
   </div>
 
   <!-- ===================== RENTABILIDAD ===================== -->
@@ -1525,6 +1596,87 @@ async function renderHoyProductos(today) {
     }).join("");
     return '<div class="cat-group">' + c[1] + " " + c[0] + '</div><div class="grid2"><div class="stat green"><div class="num">' + moneyP(tot) + '</div><div class="lab">Ventas</div></div><div class="stat"><div class="num">' + pzs + '</div><div class="lab">Piezas vendidas</div></div>' + tiles + "</div>";
   }).join("");
+  const tv = mov.reduce((a, m) => a + (Number(m.total) || 0), 0), tp = mov.reduce((a, m) => a + (Number(m.cantidad) || 0), 0);
+  const rs = document.getElementById("hoyProdResumen");
+  if (rs) rs.textContent = tp ? moneyP(tv) + " · " + tp + " pza" + (tp === 1 ? "" : "s") : "sin ventas";
+}
+const HOY_STAR = 5;
+let hoyFiltroSel = "todo", hoyClientes = null, hoyClientesT = 0;
+function hoyFiltrar(f) {
+  hoyFiltroSel = f;
+  renderHoyRegistros();
+}
+function renderHoyRegistros() {
+  const items = window.hoyItems || [], esAdm = ROLE === "admin";
+  const regs = items.filter((it) => it.tipo === "reg");
+  const cnt = (f) => regs.filter(f).length;
+  const F = [
+    ["todo", "Todo", () => true],
+    ["lav", "🧽 Lavados", (it) => it.x["Categoría"] === "Lavada"],
+    ["ext", "➕ Extras", (it) => it.x["Categoría"] !== "Lavada"],
+    ["ef", "💵 Efectivo", (it) => it.x["Forma de pago"] === "Efectivo"],
+    ["tj", "💳 Tarjeta", (it) => it.x["Forma de pago"] === "Tarjeta"],
+    ["promo", "🎁 Promos", (it) => it.x["Tipo (Sello/Canje)"] === "Canje" || it.x["Tipo (Sello/Canje)"] === "Cortesía"]
+  ];
+  const act = F.find((f) => f[0] === hoyFiltroSel) || F[0];
+  document.getElementById("hoyFiltro").innerHTML = F.map((f) => '<div class="fchip' + (f[0] === act[0] ? " sel" : "") + '" onclick="hoyFiltrar(\'' + f[0] + '\')">' + f[1] + "<em>" + (f[0] === "todo" ? regs.length : cnt(f[2])) + "</em></div>").join("");
+  const fc = document.getElementById("hoyFiltro"), fs = fc.querySelector(".sel");
+  if (fs) fc.scrollLeft = Math.max(0, fs.offsetLeft - 24);
+  const horaDe = (t) => isNaN(t) ? "" : t.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
+  const stars = {};
+  (hoyClientes || []).forEach((c) => { stars[String(c.placa || "").trim().toUpperCase()] = Number(c.visitas) || 0; });
+  const filas = items.map((it, idx) => ({ it, idx })).filter((o) => act[0] === "todo" ? true : o.it.tipo === "reg" && act[2](o.it));
+  if (!filas.length) {
+    document.getElementById("hoyRegistros").innerHTML = '<div class="vacio"><span class="big">' + (regs.length ? "🔍" : "☀️") + "</span>" + (regs.length ? "No hay registros con este filtro." : "Aún no hay registros hoy.<br>¡Toca “Registrar servicio” para el primero!") + "</div>";
+    return;
+  }
+  document.getElementById("hoyRegistros").innerHTML = filas.map((o) => {
+    const it = o.it, idx = o.idx;
+    if (it.tipo === "gasto") return '<div class="reg slim"><div class="reg-ico">🧾</div><div class="reg-main"><div class="reg-t">' + escH(it.x["Concepto"] || "Gasto") + '</div><div class="reg-s">' + horaDe(it.t) + '</div></div><div class="reg-r"><b>-' + money(it.x["Monto"]) + "</b></div></div>";
+    if (it.tipo === "sueldo") return '<div class="reg slim"><div class="reg-ico">👷</div><div class="reg-main"><div class="reg-t">' + escH(it.x["Empleado"]) + ' laboró</div><div class="reg-s">' + horaDe(it.t) + '</div></div><div class="reg-r"><b>-' + money(it.costo) + "</b></div></div>";
+    const x = it.x;
+    const veh = { Moto: "🏍️", Coche: "🚗", Camioneta: "🛻", Bici: "🚲" }[x["Tipo vehículo"]] || "🧽";
+    const tipoS = x["Tipo (Sello/Canje)"];
+    const clase = tipoS === "Cortesía" ? "cortesia" : tipoS === "Canje" ? "canje" : tipoS === "Sin sello" ? "sinsello" : "";
+    const tag = tipoS === "Cortesía" ? '<span class="tag plum">🤝 Cortesía</span>' : tipoS === "Canje" ? '<span class="tag gold">🎁 Canje</span>' : tipoS === "Sin sello" ? '<span class="tag gray">🚫 Sin sello</span>' : "";
+    let serv = String(x["Paquete / Servicio"] || "").trim();
+    if (serv === "Variado") serv = String(x["Comentarios"] || "").trim() || "Variado";
+    else {
+      const m = serv.match(/^Paq\.?\s*#\s*(\d+)/i);
+      if (m) serv = "Paq. #" + m[1];
+    }
+    const tam = String(x["Tamaño"] || "").trim();
+    const tamTag = tam && tam !== x["Tipo vehículo"] ? '<span class="tag">' + escH(tam) + "</span>" : "";
+    const placa = String(x["Placa"] || "").trim().toUpperCase();
+    let sub = "🕐 " + horaDe(it.t);
+    let nomV = String(x["Nombre"] || "").trim();
+    if (!nomV && placa) {
+      const cc = (hoyClientes || []).find((c) => String(c.placa || "").trim().toUpperCase() === placa);
+      if (cc) nomV = String(cc.nombre || "").trim();
+    }
+    if (esAdm && placa) sub += ' <span class="plate">' + escH(placa) + "</span>";
+    if (nomV) sub += " <span>👤 " + escH(nomV) + "</span>";
+    if (placa && !clase && x["Categoría"] === "Lavada" && String(x["Paquete / Servicio"]) === "Paq.#1 Básico" && x["Tipo vehículo"] !== "Bici" && stars[placa] !== undefined) {
+      const n = Math.min(HOY_STAR, stars[placa]);
+      sub += ' <span class="stars">' + "★".repeat(n) + '<span class="off">' + "★".repeat(HOY_STAR - n) + "</span></span> " + n + "/" + HOY_STAR;
+    }
+    if (tipoS === "Canje") sub += '<span>🔄 la tarjeta vuelve a 0</span>';
+    const pago = x["Forma de pago"] === "Tarjeta" ? "💳" : x["Forma de pago"] === "Efectivo" ? "💵" : "";
+    const cam = esAdm && x["Foto (link)"] ? '<button onclick="verFotos(' + idx + ')">📷</button>' : "";
+    const monto = tipoS === "Cortesía" ? "$0" : "+" + money(x["Monto cobrado"]);
+    return '<div class="reg ' + clase + '"><div class="reg-ico">' + veh + '</div><div class="reg-main"><div class="reg-t">' + escH(serv) + tamTag + tag + '</div><div class="reg-s">' + sub + '</div></div><div class="reg-r"><b>' + monto + "</b><small>" + pago + "</small>" + cam + "</div></div>";
+  }).join("");
+}
+async function hoyCargarSellos() {
+  try {
+    const c = await apiGet("clientes");
+    if (c && Array.isArray(c.clientes)) {
+      hoyClientes = c.clientes;
+      hoyClientesT = Date.now();
+      renderHoyRegistros();
+    }
+  } catch (e) {
+  }
 }
 async function loadHoy() {
   const today = isoDate(/* @__PURE__ */ new Date());
@@ -1535,7 +1687,7 @@ async function loadHoy() {
   const gastosVis = esAdm ? r.gastosTotal : r.sueldosTotal || 0;
   const utilVis = (r.ingresosTotal || 0) - gastosVis;
   document.getElementById("hGastos").textContent = money(gastosVis);
-  document.getElementById("hGastosLab").textContent = esAdm ? "Gastos (incl. sueldos)" : "Gastos (sueldos del día)";
+  document.getElementById("hGastosLab").textContent = esAdm ? "Gastos" : "Sueldos del día";
   document.getElementById("hUtilidad").textContent = money(utilVis);
   document.getElementById("hUtilidadBox").classList.toggle("neg", utilVis < 0);
   document.getElementById("hServicios").textContent = r.lavadasAuto + r.lavadasMoto + (r.lavadasBici || 0) + r.extras + r.cambiosAceite + r.limpiezaCadena || 0;
@@ -1564,37 +1716,18 @@ async function loadHoy() {
     (gs.gastos || []).forEach((g) => items.push({ t: new Date(g["Fecha"]), tipo: "gasto", x: g }));
   }
   items.sort((a2, b) => (b.t || 0) - (a2.t || 0));
-  const horaDe = (t) => isNaN(t) ? "" : t.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
   window.hoyItems = items;
-  document.getElementById("hoyRegistros").innerHTML = items.length ? items.map((it, idx) => {
-    if (it.tipo === "gasto") {
-      return '<div class="list-row neg-row"><span>'.concat(horaDe(it.t), " · 🧾 Gasto · ").concat(it.x["Concepto"] || "", "</span><span>-").concat(money(it.x["Monto"]), "</span></div>");
-    }
-    if (it.tipo === "sueldo") {
-      return '<div class="list-row neg-row"><span>'.concat(horaDe(it.t), " · 👷 ").concat(it.x["Empleado"], " laboró</span><span>-").concat(money(it.costo), "</span></div>");
-    }
-    const x = it.x;
-    const veh = { Moto: "🏍️", Coche: "🚗", Camioneta: "🛻", Bici: "🚲" }[x["Tipo vehículo"]] || "";
-    const tipoS = x["Tipo (Sello/Canje)"];
-    const marca = tipoS === "Cortesía" ? "🤝" : tipoS === "Canje" ? "🎁" : tipoS === "Sin sello" ? "🚫" : "";
-    let serv = String(x["Paquete / Servicio"] || "").trim();
-    if (serv === "Variado") serv = String(x["Comentarios"] || "").trim() || "Variado";
-    else {
-      const m = serv.match(/^Paq\.?\s*#\s*(\d+)/i);
-      if (m) serv = "Paq. #" + m[1];
-    }
-    const tam = String(x["Tamaño"] || "").trim();
-    const vehTam = [veh, tam && tam !== x["Tipo vehículo"] ? escH(tam) : ""].filter(Boolean).join(" ");
-    const izq = [horaDe(it.t), vehTam, marca, escH(serv)].filter(Boolean).join(" · ");
-    const cam = esAdm && x["Foto (link)"] ? '<button class="secondary" style="width:auto;margin:0 0 0 8px;padding:4px 8px;" onclick="verFotos('.concat(idx, ')">📷</button>') : "";
-    if (tipoS === "Cortesía") return '<div class="list-row neu-row"><span>'.concat(izq, "</span><span>$0").concat(cam, "</span></div>");
-    return '<div class="list-row pos-row"><span>'.concat(izq, "</span><span>+").concat(money(x["Monto cobrado"])).concat(cam, "</span></div>");
-  }).join("") : '<div class="empty">Aún no hay registros hoy.</div>';
+  renderHoyRegistros();
+  hoyCargarSellos();
   const box = document.getElementById("hoyAsistencia");
   if (!a.asistencia || !a.asistencia.length) {
     box.innerHTML = '<div class="empty">Nadie registrado todavía hoy.</div>';
   } else {
-    box.innerHTML = a.asistencia.map((e) => '<div class="list-row"><span>'.concat(e["Empleado"], "</span><span>").concat(e["Asistió (Sí/No)"] === "Sí" ? "✅" : "❌", "</span></div>")).join("");
+    const trab = a.asistencia.filter((e) => e["Asistió (Sí/No)"] === "Sí");
+    box.innerHTML = !trab.length ? '<div class="empty">Nadie marcado como trabajando hoy.</div>' : '<div class="avs">' + trab.map((e) => {
+      const ok = e["Asistió (Sí/No)"] === "Sí", nom = String(e["Empleado"] || "");
+      return '<div class="av ' + (ok ? "ok" : "no") + '"><div class="c">' + escH(nom.charAt(0).toUpperCase()) + "</div><small>" + escH(nom) + "</small><i>" + (ok ? "✅" : "❌") + "</i></div>";
+    }).join("") + "</div>";
   }
 }
 let catalogoCache = null;
