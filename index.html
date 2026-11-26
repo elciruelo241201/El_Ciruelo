@@ -366,6 +366,27 @@ details.card[open] summary{margin-bottom:10px;}
 .pkc small{font-size:10.5px;color:#1E8E4E;font-weight:800;display:block;}
 .pkc.sel{border-color:var(--agua);background:var(--agua-light);}
 .pkc.sel:after{content:"✓";position:absolute;top:6px;right:8px;background:var(--agua);color:#fff;width:20px;height:20px;border-radius:50%;font-size:12px;text-align:center;line-height:20px;font-weight:800;}
+
+/* ===== Clientes ===== */
+#cliFiltros{flex-wrap:wrap;overflow:visible;}
+.cli-btn span.wa{background:#25D366;color:#fff;cursor:pointer;box-shadow:0 3px 8px rgba(37,211,102,.35);}
+.sugr,.crow{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid var(--line);cursor:pointer;}
+.sugr:last-child,.crow:last-child{border-bottom:0;}
+.sugr .av2,.crow .av2,.pav .av2{width:36px;height:36px;border-radius:50%;background:var(--agua-light);color:var(--agua-dark);display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:16px;flex:0 0 auto;}
+.sugr .mn,.crow .mn,.pav .mn{flex:1;min-width:0;}
+.sugr .nm,.crow .nm,.pav .nm{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:14.5px;line-height:1.1;color:var(--ink);}
+.sugr .sb,.crow .sb,.pav .sb{font-size:11.5px;font-weight:800;color:var(--ink-soft);margin-top:2px;}
+.sugr .stx,.crow .stx,.pav .stx{color:#E6A800;font-size:12px;letter-spacing:1px;white-space:nowrap;}
+.sugr .stx .off,.crow .stx .off,.pav .stx .off{color:#d6e4e7;}
+.rcchips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.rcchips div{background:#fff;border:2px solid var(--line);border-radius:99px;padding:5px 11px;font-weight:800;font-size:12px;color:var(--agua-dark);cursor:pointer;}
+.pav{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-left:6px solid #E6A800;border-radius:16px;padding:10px;margin-bottom:8px;}
+.pav.r{border-left-color:#D64545;}
+.pav .tag{display:inline-block;font-size:10.5px;font-weight:800;border-radius:99px;padding:1px 8px;margin-left:4px;background:#FFF3CF;color:#8A5A00;}
+.pav .tag.t2{background:#FDE3E3;color:#C01E1E;}
+.pav .dd{font-size:11.5px;font-weight:800;color:#9A6B00;margin-top:2px;}
+.pav.r .dd{color:#C01E1E;}
+.pav button{width:auto;margin:0;padding:8px 12px;border:2px solid #BEE8CF;background:#E3F7E9;border-radius:12px;font-weight:800;font-size:13px;color:#1E8E4E;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -625,19 +646,21 @@ details.card[open] summary{margin-bottom:10px;}
     <div class="card">
       <h3>🔍 Buscar cliente</h3>
       <div class="search-row">
-        <input id="buscarPlaca" type="text" placeholder="Placa, ej. ABC1234" style="text-transform:uppercase;">
+        <input id="buscarPlaca" type="text" placeholder="Nombre o placa" autocomplete="off">
       </div>
+      <div id="clienteSug"></div>
+      <div id="clienteRec"></div>
       <div id="clienteResultado"></div>
     </div>
-    <div class="card solo-admin">
-      <h3>⚠️ Clientes para avisar (10+ días)</h3>
-      <div id="avisarLista"><div class="empty">Cargando…</div></div>
+    <div class="card">
+      <h3>👥 Ver clientes</h3>
+      <div class="fchips" id="cliFiltros"></div>
+      <div id="cliLista"><div class="hint">Toca un filtro para ver la lista.</div></div>
     </div>
     <div class="card solo-admin">
-      <h3>📲 Avisar sellos por WhatsApp</h3>
-      <div class="hint">Clientes con celular y sellos. Toca “Avisar”, revisa el mensaje y envíalo. Los ya avisados quedan marcados ✓.</div>
-      <input id="buscarAvisoSellos" type="text" placeholder="Buscar por nombre o placa" style="width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:12px;font-family:inherit;font-size:14px;font-weight:600;margin:8px 0;">
-      <div id="avisoSellosLista"><div class="empty">Cargando…</div></div>
+      <h3>⏰ Para avisar</h3>
+      <div class="hint" style="margin-top:0;">Primero los que llevan más días sin venir. Mensaje 1 a los 20 días y mensaje 2 a los 30 días (máximo 2 por cliente). Toca “Avisar”, revisa el mensaje y envíalo.</div>
+      <div id="paraAvisar" style="margin-top:8px;"><div class="empty">Cargando…</div></div>
     </div>
   </div>
 
@@ -867,7 +890,7 @@ details.card[open] summary{margin-bottom:10px;}
     <h3>💬 Avisar sus sellos por WhatsApp</h3>
     <div class="hint">Revisa el mensaje y toca el botón: se abre WhatsApp con el chat del cliente listo para enviar. Envíalo solo a clientes que aceptaron recibir su aviso.</div>
     <textarea id="whatsTexto" rows="7" style="width:100%;padding:11px 12px;border:2px solid var(--line);border-radius:12px;font-family:inherit;font-size:14px;font-weight:600;resize:vertical;margin-top:8px;"></textarea>
-    <a id="whatsEnviar" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-top:16px;padding:13px;border-radius:13px;background:#25D366;color:#fff;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:15.5px;box-shadow:0 4px 10px rgba(37,211,102,0.35);" onclick="setTimeout(()=>closeModal('modalWhats'),400)">📲 Enviar por WhatsApp</a>
+    <a id="whatsEnviar" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-top:16px;padding:13px;border-radius:13px;background:#25D366;color:#fff;font-family:'Baloo 2',sans-serif;font-weight:700;font-size:15.5px;box-shadow:0 4px 10px rgba(37,211,102,0.35);" onclick="if(window.__avisoPend){window.__avisoPend();window.__avisoPend=null;} setTimeout(()=>closeModal('modalWhats'),400)">📲 Enviar por WhatsApp</a>
     <button class="secondary" onclick="closeModal('modalWhats')">Ahora no</button>
   </div>
 </div>
@@ -1243,6 +1266,7 @@ const _DEMO_PROD_GET = ["productos", "movProductos"], _DEMO_PROD_POST = ["update
 function demoGet(action, params) {
   if (_DEMO_PROD_GET.includes(action)) return demoProdGet(action, params);
   if (action === "config") return { config: demoStore("config", {}) };
+  if (action === "avisos") return { avisos: demoStore("avisos", {}) };
   if (action === "insumos") return { insumos: demoStore("insumos", []).map((x, i) => Object.assign({ row: i + 2 }, x)) };
   if (action === "catalogo") return demoStore("catalogo", DEMO.catalogo);
   if (action === "historico") {
@@ -1369,6 +1393,18 @@ function demoGet(action, params) {
   return {};
 }
 function demoPost(action, payload) {
+  if (action === "saveAviso") {
+    const a = demoStore("avisos", {}), k = String(payload.placa || "").toUpperCase();
+    let r = a[k];
+    if (!r || r.u !== payload.u) r = { u: payload.u };
+    if (payload.num === 1) {
+      r.m1 = payload.fecha;
+      r.d1 = payload.dias;
+    } else r.m2 = payload.fecha;
+    a[k] = r;
+    demoSave("avisos", a);
+    return { ok: true };
+  }
   if (action === "saveConfig") {
     const c = demoStore("config", {});
     Object.keys(payload.valores || {}).forEach((k) => { c[k] = payload.valores[k]; });
@@ -2237,6 +2273,7 @@ function mensajeSellos(nombre, n, tipoVeh, canje) {
   return "".concat(saludo, "\nYa llevas ").concat(n, " de ").concat(SELLOS_PROMO, " sellos!!! ⭐🧽\nRecuerda, a la 6ta visita, tu lavado ").concat(premio, "!!! 🎁🎉");
 }
 async function ofrecerWhatsApp(info) {
+  window.__avisoPend = null;
   try {
     if (info.tipoSello !== "Sello" && info.tipoSello !== "Canje") return;
     const cel = String(info.celular || "").replace(/\D/g, "");
@@ -2621,85 +2658,259 @@ async function guardarRegistro() {
   mostrarConfirmacion(infoOk);
   ofrecerWhatsApp(infoWhats);
 }
-let buscarTimer = null;
-document.getElementById("buscarPlaca").addEventListener("input", (e) => {
-  e.target.value = e.target.value.toUpperCase();
-  clearTimeout(buscarTimer);
-  buscarTimer = setTimeout(buscarCliente, 350);
-});
-async function buscarCliente() {
-  const placa = document.getElementById("buscarPlaca").value.trim();
-  const box = document.getElementById("clienteResultado");
-  if (placa.length < 3) {
-    box.innerHTML = "";
-    return;
-  }
-  const data = await apiGet("clientes");
-  const c = (data.clientes || []).find((x) => String(x.placa).toUpperCase().includes(placa));
-  if (!c) {
-    box.innerHTML = '<div class="empty">Sin sellos todavía con esa placa.</div>';
-    return;
-  }
-  const visitas = Number(c.visitas) || 0;
-  let stamps = "";
-  for (let i = 1; i <= 6; i++) {
-    if (i === 6) stamps += '<div class="stamp '.concat(visitas >= SELLOS_PROMO ? "gift" : "", '">🎁</div>');
-    else stamps += '<div class="stamp '.concat(i <= visitas ? "filled" : "", '">').concat(i <= visitas ? '<img class="stamp-logo" src="'.concat(LOGO_SRC, '">') : "", "</div>");
-  }
-  box.innerHTML = '\n    <div class="client-card">\n      <div class="client-name">'.concat(c.nombre || "Cliente", '</div>\n      <div class="client-plate">').concat(c.placa, '</div>\n      <div class="stamps">').concat(stamps, '</div>\n      <div style="text-align:center;font-weight:800;color:var(--agua-dark);font-size:13px;">\n        ').concat(visitas >= SELLOS_PROMO ? "🎉 ¡Su 6ta va gratis!" + (visitas > SELLOS_PROMO ? " (+".concat(visitas - SELLOS_PROMO, " sello").concat(visitas - SELLOS_PROMO > 1 ? "s" : "", " para la siguiente)") : "") + " · canje de lunes a viernes" : visitas + " de 5 sellos", "\n      </div>\n    </div>");
-}
-let avisoSellosClientes = [];
-function avisadosSellos() {
-  try {
-    return JSON.parse(localStorage.getItem("elciruelo_avisados_sellos") || "{}");
-  } catch (e) {
-    return {};
-  }
-}
+let CLI_DATA = [], cliFiltroSel = "";
+const cliNorm = (t) => String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const cliPlain = (t) => cliNorm(t).replace(/[^a-z0-9]/g, "");
 function celValido(c) {
   const d = String(c || "").replace(/\D/g, "");
   return d.length === 10 || d.length === 12 && d.startsWith("52");
 }
-function renderAvisoSellos() {
-  const box = document.getElementById("avisoSellosLista");
-  if (!box) return;
-  const q = (document.getElementById("buscarAvisoSellos").value || "").toLowerCase().trim();
-  const av = avisadosSellos();
-  const list = avisoSellosClientes.filter((c) => !q || String(c.nombre || "").toLowerCase().includes(q) || String(c.placa || "").toLowerCase().includes(q));
-  if (!list.length) {
-    box.innerHTML = '<div class="empty">Sin clientes con celular y sellos</div>';
+function telWa(cel) {
+  const d = String(cel || "").replace(/\D/g, "");
+  return d.length === 10 ? "52" + d : d.length === 12 && d.startsWith("52") ? d : "";
+}
+function abrirWhatsMsg(tel, texto, onEnviar) {
+  document.getElementById("whatsTexto").value = texto;
+  const a = document.getElementById("whatsEnviar");
+  const act = () => {
+    a.href = "https://wa.me/" + tel + "?text=" + encodeURIComponent(document.getElementById("whatsTexto").value);
+  };
+  document.getElementById("whatsTexto").oninput = act;
+  act();
+  window.__avisoPend = onEnviar || null;
+  openModal("modalWhats");
+}
+function premioCli(tipo) {
+  return tipo === "Moto" ? "con 50% de DESCUENTO" : "GRATIS";
+}
+function saludoCli(nombre) {
+  const n = String(nombre || "").trim().split(/\s+/)[0];
+  return n ? "Hola " + n + " 👋" : "Hola 👋";
+}
+function faltanTxt(x) {
+  return x === 1 ? "te falta 1" : "te faltan " + x;
+}
+function msgSellosEstado(nombre, v, tipo) {
+  const n = Math.min(v, SELLOS_PROMO), x = SELLOS_PROMO - n, pr = premioCli(tipo);
+  const ini = saludoCli(nombre) + " Te saluda *Autolavado EL CIRUELO* 🚗💦\n";
+  if (n >= SELLOS_PROMO) return ini + "¡Ya completaste tus " + SELLOS_PROMO + " sellos!!! ⭐ Tu próximo lavado (el 6to) va " + pr + " 🎁 (de lunes a viernes).\n¡Aquí te esperamos! 🧽💙";
+  if (n === 0) return ini + "Empieza tu tarjeta de sellos ⭐: a la 6ta visita tu lavado va " + pr + " 🎁\n¡Aquí te esperamos! 🧽💙";
+  return ini + "Llevas " + n + " de " + SELLOS_PROMO + " sellos ⭐ y " + faltanTxt(x) + " para tu lavado " + (pr === "GRATIS" ? "GRATIS" : pr) + " 🎁\n¡Aquí te esperamos! 🧽💙";
+}
+function msgRegreso(nombre, v, tipo, num) {
+  const n = Math.min(v, SELLOS_PROMO), x = SELLOS_PROMO - n, pr = premioCli(tipo);
+  if (num === 1) {
+    const ini = saludoCli(nombre) + " ¡Te extrañamos en *Autolavado EL CIRUELO*! 🚗💦\n";
+    if (n >= SELLOS_PROMO) return ini + "¡Ya completaste tus " + SELLOS_PROMO + " sellos!!! ⭐ Tu lavado va " + pr + " 🎁 (de lunes a viernes). ¡Pásate a canjearlo! 🧽💙";
+    if (n === 0) return ini + "Pásate y empieza tu tarjeta de sellos ⭐: a la 6ta visita tu lavado va " + pr + " 🎁\n¿Cuándo te esperamos? 🧽💙";
+    return ini + "Llevas " + n + " de " + SELLOS_PROMO + " sellos ⭐ y solo " + faltanTxt(x).replace("te ", "te ") + " para tu lavado " + pr + " 🎁\n¿Cuándo te esperamos? 🧽💙";
+  }
+  const nom = String(nombre || "").trim().split(/\s+/)[0];
+  const ini = "Hola" + (nom ? " " + nom : "") + ", ¿cómo estás? 😊 Hace un mes que no te vemos por *Autolavado EL CIRUELO*";
+  if (n >= SELLOS_PROMO) return ini + " y tus " + SELLOS_PROMO + " sellos ⭐ te están esperando.\nTu lavado " + pr + " 🎁 sigue disponible (de lunes a viernes) ✨\n¡Te esperamos esta semana! 🚗💦";
+  if (n === 0) return ini + ".\nEsta semana pásate y empieza tu tarjeta de sellos ⭐: a la 6ta visita tu lavado va " + pr + " 🎁 Tu vehículo merece un buen lavado ✨\n¡Te esperamos! 🚗💦";
+  return ini + (n === 1 ? " y tu sello ⭐ te está esperando." : " y tus " + n + " sellos ⭐ te están esperando.") + "\n" + faltanTxt(x).replace("te ", "Te ") + " para tu lavado " + pr + " 🎁 Tu vehículo merece un buen lavado ✨\n¡Te esperamos esta semana! 🚗💦";
+}
+function starsHtml(v) {
+  const n = Math.min(Number(v) || 0, SELLOS_PROMO);
+  return "★".repeat(n) + '<span class="off">' + "★".repeat(SELLOS_PROMO - n) + "</span>";
+}
+function diasTxt(c) {
+  const d = c.dias === "" || c.dias == null || isNaN(Number(c.dias)) ? null : Number(c.dias);
+  return d === null ? "" : d <= 0 ? "hoy" : d === 1 ? "ayer" : "hace " + d + " días";
+}
+function clienteTarjetaHtml(c, conWa) {
+  const v = Number(c.visitas) || 0, n = Math.min(v, SELLOS_PROMO);
+  const nom = String(c.nombre || "").trim();
+  const dt = diasTxt(c);
+  const chips = [];
+  if (c.tipo) chips.push((({ Moto: "🏍️", Coche: "🚗", Camioneta: "🛻", Bici: "🚲" })[c.tipo] || "🚗") + " " + escH(c.tipo) + (c.tamano && c.tamano !== c.tipo ? " · " + escH(c.tamano) : ""));
+  let h = '<div class="cli"><div class="cli-top"><div class="cli-av">' + (nom ? escH(nom.charAt(0).toUpperCase()) : "🚗") + '</div><div><div class="cli-nm">' + escH(nom || "Cliente") + '</div><span class="cli-pl">' + escH(c.placa) + '</span></div></div><div class="cli-st"><span class="stars">' + starsHtml(v) + '</span><span class="n">' + n + "/" + SELLOS_PROMO + "</span></div>" + (dt ? '<div class="cli-meta">🕐 Última visita: ' + dt + "</div>" : "") + (chips.length ? '<div class="cli-btn">' + chips.map((x) => "<span>" + x + "</span>").join("") + "</div>" : "");
+  if (conWa) {
+    h += celValido(c.celular) ? '<div class="cli-btn"><span class="wa" data-p="' + escH(c.placa) + '" onclick="avisarCliente(this.getAttribute(\'data-p\'))">📲 Enviar mensaje por WhatsApp</span></div>' : '<div class="cli-meta">Sin celular guardado</div>';
+  }
+  h += "</div>";
+  if (v >= SELLOS_PROMO) {
+    const moto = c.tipo === "Moto";
+    h += esFinDeSemana() ? '<div class="canje-banner fin"><big>🎁</big><div>Ya completó sus 5 sellos<small>El canje es de lunes a viernes.</small></div></div>' : '<div class="canje-banner"><big>🎁</big><div>' + (moto ? "¡Toca su canje: 50% de descuento!" : "¡Toca lavado GRATIS!") + "<small>Canje de promo disponible (lun–vie)</small></div></div>";
+  }
+  return h;
+}
+function cliBuscar(q) {
+  const qn = cliNorm(q).trim(), qp = cliPlain(q);
+  if (qn.length < 2) return [];
+  return CLI_DATA.filter((c) => cliNorm(c.nombre).indexOf(qn) >= 0 || qp && cliPlain(c.placa).indexOf(qp) >= 0);
+}
+function cliFila(c, clase) {
+  const nom = String(c.nombre || "").trim();
+  return '<div class="' + clase + '" data-p="' + escH(c.placa) + '" onclick="verCliente(this.getAttribute(\'data-p\'))"><div class="av2">' + (nom ? escH(nom.charAt(0).toUpperCase()) : "🚗") + '</div><div class="mn"><div class="nm">' + escH(nom || c.placa) + '</div><div class="sb">' + escH(c.placa) + (c.tipo ? " · " + escH(c.tipo) : "") + (diasTxt(c) ? " · " + diasTxt(c) : "") + '</div></div><span class="stx">' + starsHtml(c.visitas) + "</span></div>";
+}
+function cliRecGet() {
+  try {
+    return JSON.parse(localStorage.getItem("elciruelo_cli_rec") || "[]");
+  } catch (e) {
+    return [];
+  }
+}
+function renderClienteRec() {
+  const box = document.getElementById("clienteRec");
+  if (document.getElementById("buscarPlaca").value.trim()) {
+    box.innerHTML = "";
     return;
   }
-  box.innerHTML = list.map((c) => {
-    const i = avisoSellosClientes.indexOf(c);
-    const ok = av[String(c.placa).toUpperCase()];
-    return '<div class="list-row">\n      <span>'.concat(escH(c.nombre || c.placa), ' <span style="color:var(--ink-soft);font-weight:700;">(').concat(escH(c.placa), ") · ").concat(Number(c.visitas) || 0, ' sellos</span></span>\n      <button class="secondary" style="width:auto;margin:0;padding:7px 12px;" onclick="avisarSellosCliente(').concat(i, ')">').concat(ok ? "✓ " : "", "📲 Avisar</button>\n    </div>");
-  }).join("");
+  const rec = cliRecGet().map((pl) => CLI_DATA.find((c) => String(c.placa).toUpperCase() === pl)).filter(Boolean);
+  box.innerHTML = rec.length ? '<div class="hint" style="margin-top:10px;">⚡ Recientes</div><div class="rcchips">' + rec.map((c) => '<div data-p="' + escH(c.placa) + '" onclick="verCliente(this.getAttribute(\'data-p\'))">' + escH(c.placa) + (c.nombre ? " · " + escH(String(c.nombre).split(/\s+/)[0]) : "") + "</div>").join("") + "</div>" : "";
 }
-function avisarSellosCliente(i) {
-  const c = avisoSellosClientes[i];
+function verCliente(placa) {
+  const pl = String(placa).toUpperCase();
+  const c = CLI_DATA.find((x) => String(x.placa).toUpperCase() === pl);
   if (!c) return;
-  const av = avisadosSellos();
-  av[String(c.placa).toUpperCase()] = isoDate(/* @__PURE__ */ new Date());
+  document.getElementById("clienteSug").innerHTML = "";
+  document.getElementById("buscarPlaca").value = c.placa;
+  document.getElementById("clienteResultado").innerHTML = clienteTarjetaHtml(c, ROLE === "admin");
+  document.getElementById("clienteRec").innerHTML = "";
+  const rec = cliRecGet().filter((x) => x !== pl);
+  rec.unshift(pl);
   try {
-    localStorage.setItem("elciruelo_avisados_sellos", JSON.stringify(av));
+    localStorage.setItem("elciruelo_cli_rec", JSON.stringify(rec.slice(0, 5)));
   } catch (e) {
   }
-  ofrecerWhatsApp({ tipoSello: "Sello", celular: c.celular, placa: c.placa, nombre: c.nombre, tipoVehiculo: c.tipo });
-  renderAvisoSellos();
+  document.getElementById("clienteResultado").scrollIntoView({ behavior: "smooth", block: "start" });
 }
-document.getElementById("buscarAvisoSellos").addEventListener("input", renderAvisoSellos);
-async function loadClientes() {
-  const data = await apiGet("clientes");
-  avisoSellosClientes = (data.clientes || []).filter((c) => celValido(c.celular) && Number(c.visitas) > 0);
-  renderAvisoSellos();
-  const list = (data.clientes || []).filter((c) => c.avisar && String(c.avisar).includes("Sí"));
-  const box = document.getElementById("avisarLista");
-  if (!list.length) {
-    box.innerHTML = '<div class="empty">Nadie pendiente de avisar 🎉</div>';
+function buscarClienteUI() {
+  const q = document.getElementById("buscarPlaca").value;
+  const sug = document.getElementById("clienteSug"), res = document.getElementById("clienteResultado");
+  const m = cliBuscar(q);
+  if (cliNorm(q).trim().length < 2) {
+    sug.innerHTML = "";
+    res.innerHTML = "";
+    renderClienteRec();
     return;
   }
-  box.innerHTML = list.map((c) => '\n    <div class="list-row">\n      <span>'.concat(c.nombre || c.placa, ' <span style="color:var(--ink-soft);font-weight:700;">(').concat(c.placa, ')</span></span>\n      <span class="badge-warn">').concat(c.dias || "?", " días</span>\n    </div>")).join("");
+  document.getElementById("clienteRec").innerHTML = "";
+  if (m.length === 1) {
+    sug.innerHTML = "";
+    res.innerHTML = clienteTarjetaHtml(m[0], ROLE === "admin");
+    return;
+  }
+  res.innerHTML = "";
+  sug.innerHTML = m.length ? '<div style="margin-top:6px;">' + m.slice(0, 6).map((c) => cliFila(c, "sugr")).join("") + "</div>" + (m.length > 6 ? '<div class="hint">Hay ' + (m.length - 6) + " más: escribe un poco más para afinar.</div>" : "") : '<div class="empty">Sin clientes con ese nombre o placa.</div>';
+}
+document.getElementById("buscarPlaca").addEventListener("input", buscarClienteUI);
+function cliFiltrados() {
+  const f = cliFiltroSel;
+  let l = CLI_DATA.slice();
+  if (f === "canje") l = l.filter((c) => Number(c.visitas) >= SELLOS_PROMO);
+  else if (f === "casi") l = l.filter((c) => Number(c.visitas) === SELLOS_PROMO - 1);
+  else if (f === "dias20") l = l.filter((c) => Number(c.dias) >= 20);
+  if (f === "dias20") l.sort((a, b) => Number(b.dias) - Number(a.dias));
+  else l.sort((a, b) => String(a.nombre || a.placa).localeCompare(String(b.nombre || b.placa), "es"));
+  return l;
+}
+function renderCliFiltros() {
+  const cnt = (f) => f === "todos" ? CLI_DATA.length : f === "canje" ? CLI_DATA.filter((c) => Number(c.visitas) >= SELLOS_PROMO).length : f === "casi" ? CLI_DATA.filter((c) => Number(c.visitas) === SELLOS_PROMO - 1).length : CLI_DATA.filter((c) => Number(c.dias) >= 20).length;
+  const F = [["todos", "Todos"], ["canje", "🎁 Canje listo"], ["casi", "⭐ Casi (4/5)"], ["dias20", "⏰ 20+ días"]];
+  document.getElementById("cliFiltros").innerHTML = F.map((f) => '<div class="fchip' + (cliFiltroSel === f[0] ? " sel" : "") + '" onclick="cliFiltrar(\'' + f[0] + '\')">' + f[1] + "<em>" + cnt(f[0]) + "</em></div>").join("");
+  const box = document.getElementById("cliLista");
+  if (!cliFiltroSel) {
+    box.innerHTML = '<div class="hint">Toca un filtro para ver la lista.</div>';
+    return;
+  }
+  const l = cliFiltrados();
+  box.innerHTML = l.length ? l.slice(0, 30).map((c) => cliFila(c, "crow")).join("") + (l.length > 30 ? '<div class="hint">Mostrando 30 de ' + l.length + ". Usa el buscador para encontrar a alguien en particular.</div>" : "") : '<div class="empty">Nadie en esta lista 🎉</div>';
+}
+function cliFiltrar(f) {
+  cliFiltroSel = cliFiltroSel === f ? "" : f;
+  renderCliFiltros();
+}
+function avisarCliente(placa) {
+  const c = CLI_DATA.find((x) => String(x.placa).toUpperCase() === String(placa).toUpperCase());
+  if (!c) return;
+  const tel = telWa(c.celular);
+  if (!tel) {
+    showToast("Este cliente no tiene celular guardado");
+    return;
+  }
+  abrirWhatsMsg(tel, msgSellosEstado(c.nombre, Number(c.visitas) || 0, c.tipo), null);
+}
+let AVISOS = {}, AVISOS_SRV = false;
+function avisosGet() {
+  if (AVISOS_SRV) return AVISOS;
+  try {
+    return JSON.parse(localStorage.getItem("elciruelo_avisos_20_30") || "{}");
+  } catch (e) {
+    return {};
+  }
+}
+function avisoNum(c, st) {
+  const dias = Number(c.dias);
+  if (!(dias >= 20)) return 0;
+  let r = st[String(c.placa).toUpperCase()];
+  if (r && r.u !== String(c.ultima || "").substring(0, 10)) r = null;
+  if (!r || !r.m1) return 1;
+  if (r.m2) return 0;
+  const desde = Math.floor((Date.now() - new Date(r.m1 + "T12:00:00").getTime()) / 864e5);
+  return dias >= 30 && (Number(r.d1) < 30 || desde >= 10) ? 2 : 0;
+}
+function renderParaAvisar() {
+  const box = document.getElementById("paraAvisar");
+  if (!box) return;
+  const st = avisosGet();
+  const sinCel = CLI_DATA.filter((c) => Number(c.dias) >= 20 && !celValido(c.celular)).length;
+  const l = CLI_DATA.filter((c) => celValido(c.celular) && avisoNum(c, st) > 0).sort((a, b) => Number(b.dias) - Number(a.dias));
+  if (!l.length) {
+    box.innerHTML = '<div class="empty">Nadie pendiente de avisar 🎉</div>' + (sinCel ? '<div class="hint">' + sinCel + " cliente" + (sinCel > 1 ? "s" : "") + " con 20+ días sin celular guardado.</div>" : "");
+    return;
+  }
+  box.innerHTML = l.map((c) => {
+    const num = avisoNum(c, st), nom = String(c.nombre || "").trim(), d = Number(c.dias);
+    return '<div class="pav' + (d >= 30 ? " r" : "") + '"><div class="av2">' + (nom ? escH(nom.charAt(0).toUpperCase()) : "🚗") + '</div><div class="mn"><div class="nm">' + escH(nom || c.placa) + '<span class="tag' + (num === 2 ? " t2" : "") + '">Mensaje ' + num + '</span></div><div class="sb">' + escH(c.placa) + ' · <span class="stx">' + starsHtml(c.visitas) + '</span></div><div class="dd">🕐 hace ' + d + ' días</div></div><button type="button" data-p="' + escH(c.placa) + '" data-n="' + num + '" onclick="avisarListado(this.getAttribute(\'data-p\'),Number(this.getAttribute(\'data-n\')))">📲 Avisar</button></div>';
+  }).join("") + (sinCel ? '<div class="hint">' + sinCel + " cliente" + (sinCel > 1 ? "s" : "") + " con 20+ días sin celular guardado.</div>" : "");
+}
+function avisarListado(placa, num) {
+  const c = CLI_DATA.find((x) => String(x.placa).toUpperCase() === String(placa).toUpperCase());
+  if (!c) return;
+  const tel = telWa(c.celular);
+  if (!tel) return;
+  abrirWhatsMsg(tel, msgRegreso(c.nombre, Number(c.visitas) || 0, c.tipo, num), () => {
+    const st = avisosGet(), k = String(c.placa).toUpperCase(), u = String(c.ultima || "").substring(0, 10);
+    let r = st[k];
+    if (!r || r.u !== u) r = { u };
+    const hoy = isoDate(/* @__PURE__ */ new Date());
+    if (num === 1) {
+      r.m1 = hoy;
+      r.d1 = Number(c.dias) || 0;
+    } else r.m2 = hoy;
+    st[k] = r;
+    if (AVISOS_SRV) {
+      apiPost("saveAviso", { placa: c.placa, u, num, dias: Number(c.dias) || 0, fecha: hoy }).then((res) => {
+        if (res && res.error) showToast("No se pudo guardar el aviso en el Sheet: " + res.error);
+      });
+    } else {
+      try {
+        localStorage.setItem("elciruelo_avisos_20_30", JSON.stringify(st));
+      } catch (e) {
+      }
+    }
+    renderParaAvisar();
+  });
+}
+async function loadClientes() {
+  const data = await apiGet("clientes");
+  CLI_DATA = data.clientes || [];
+  try {
+    const av = await apiGet("avisos");
+    if (av && av.avisos) {
+      AVISOS = av.avisos;
+      AVISOS_SRV = true;
+    } else AVISOS_SRV = false;
+  } catch (e) {
+    AVISOS_SRV = false;
+  }
+  renderClienteRec();
+  renderCliFiltros();
+  renderParaAvisar();
+  if (document.getElementById("buscarPlaca").value.trim()) buscarClienteUI();
 }
 let PROD = [], prodQtyMap = {}, prodEditIdx = -1, prodVentaCat = "Bebidas", prodCatCat = "Bebidas";
 const moneyP = (n) => "$" + (Number(n) || 0).toLocaleString("es-MX", { maximumFractionDigits: 2 });
