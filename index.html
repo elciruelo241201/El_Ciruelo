@@ -659,7 +659,7 @@ details.card[open] summary{margin-bottom:10px;}
     </div>
     <div class="card solo-admin">
       <h3>⏰ Para avisar</h3>
-      <div class="hint" style="margin-top:0;">Primero los que llevan más días sin venir. Mensaje 1 a los 20 días y mensaje 2 a los 30 días (máximo 2 por cliente). Toca “Avisar”, revisa el mensaje y envíalo.</div>
+      <div class="hint" style="margin-top:0;">Primero los que llevan más días sin venir. Mensaje 1 a los 20 días (a los 15 si ya tiene sus 5 sellos y su próximo lavado va gratis) y mensaje 2 a los 30 días (máximo 2 por cliente). Toca “Avisar”, revisa el mensaje y envíalo.</div>
       <div id="paraAvisar" style="margin-top:8px;"><div class="empty">Cargando…</div></div>
     </div>
   </div>
@@ -2802,14 +2802,14 @@ function cliFiltrados() {
   let l = CLI_DATA.slice();
   if (f === "canje") l = l.filter((c) => Number(c.visitas) >= SELLOS_PROMO);
   else if (f === "casi") l = l.filter((c) => Number(c.visitas) === SELLOS_PROMO - 1);
-  else if (f === "dias20") l = l.filter((c) => Number(c.dias) >= 20);
+  else if (f === "dias20") l = l.filter((c) => Number(c.dias) >= avisoUmbral(c));
   if (f === "dias20") l.sort((a, b) => Number(b.dias) - Number(a.dias));
   else l.sort((a, b) => String(a.nombre || a.placa).localeCompare(String(b.nombre || b.placa), "es"));
   return l;
 }
 function renderCliFiltros() {
-  const cnt = (f) => f === "todos" ? CLI_DATA.length : f === "canje" ? CLI_DATA.filter((c) => Number(c.visitas) >= SELLOS_PROMO).length : f === "casi" ? CLI_DATA.filter((c) => Number(c.visitas) === SELLOS_PROMO - 1).length : CLI_DATA.filter((c) => Number(c.dias) >= 20).length;
-  const F = [["todos", "Todos"], ["canje", "🎁 Canje listo"], ["casi", "⭐ Casi (4/5)"], ["dias20", "⏰ 20+ días"]];
+  const cnt = (f) => f === "todos" ? CLI_DATA.length : f === "canje" ? CLI_DATA.filter((c) => Number(c.visitas) >= SELLOS_PROMO).length : f === "casi" ? CLI_DATA.filter((c) => Number(c.visitas) === SELLOS_PROMO - 1).length : CLI_DATA.filter((c) => Number(c.dias) >= avisoUmbral(c)).length;
+  const F = [["todos", "Todos"], ["canje", "🎁 Canje listo"], ["casi", "⭐ Casi (4/5)"], ["dias20", "⏰ Por avisar"]];
   document.getElementById("cliFiltros").innerHTML = F.map((f) => '<div class="fchip' + (cliFiltroSel === f[0] ? " sel" : "") + '" onclick="cliFiltrar(\'' + f[0] + '\')">' + f[1] + "<em>" + cnt(f[0]) + "</em></div>").join("");
   const box = document.getElementById("cliLista");
   if (!cliFiltroSel) {
@@ -2842,9 +2842,12 @@ function avisosGet() {
     return {};
   }
 }
+function avisoUmbral(c) {
+  return Number(c.visitas) >= SELLOS_PROMO ? 15 : 20;
+}
 function avisoNum(c, st) {
   const dias = Number(c.dias);
-  if (!(dias >= 20)) return 0;
+  if (!(dias >= avisoUmbral(c))) return 0;
   let r = st[String(c.placa).toUpperCase()];
   if (r && r.u !== String(c.ultima || "").substring(0, 10)) r = null;
   if (!r || !r.m1) return 1;
@@ -2856,16 +2859,16 @@ function renderParaAvisar() {
   const box = document.getElementById("paraAvisar");
   if (!box) return;
   const st = avisosGet();
-  const sinCel = CLI_DATA.filter((c) => Number(c.dias) >= 20 && !celValido(c.celular)).length;
+  const sinCel = CLI_DATA.filter((c) => Number(c.dias) >= avisoUmbral(c) && !celValido(c.celular)).length;
   const l = CLI_DATA.filter((c) => celValido(c.celular) && avisoNum(c, st) > 0).sort((a, b) => Number(b.dias) - Number(a.dias));
   if (!l.length) {
-    box.innerHTML = '<div class="empty">Nadie pendiente de avisar 🎉</div>' + (sinCel ? '<div class="hint">' + sinCel + " cliente" + (sinCel > 1 ? "s" : "") + " con 20+ días sin celular guardado.</div>" : "");
+    box.innerHTML = '<div class="empty">Nadie pendiente de avisar 🎉</div>' + (sinCel ? '<div class="hint">' + sinCel + " cliente" + (sinCel > 1 ? "s" : "") + " por avisar sin celular guardado.</div>" : "");
     return;
   }
   box.innerHTML = l.map((c) => {
     const num = avisoNum(c, st), nom = String(c.nombre || "").trim(), d = Number(c.dias);
-    return '<div class="pav' + (d >= 30 ? " r" : "") + '"><div class="av2">' + (nom ? escH(nom.charAt(0).toUpperCase()) : "🚗") + '</div><div class="mn"><div class="nm">' + escH(nom || c.placa) + '<span class="tag' + (num === 2 ? " t2" : "") + '">Mensaje ' + num + '</span></div><div class="sb">' + escH(c.placa) + ' · <span class="stx">' + starsHtml(c.visitas) + '</span></div><div class="dd">🕐 hace ' + d + ' días</div></div><button type="button" data-p="' + escH(c.placa) + '" data-n="' + num + '" onclick="avisarListado(this.getAttribute(\'data-p\'),Number(this.getAttribute(\'data-n\')))">📲 Avisar</button></div>';
-  }).join("") + (sinCel ? '<div class="hint">' + sinCel + " cliente" + (sinCel > 1 ? "s" : "") + " con 20+ días sin celular guardado.</div>" : "");
+    return '<div class="pav' + (d >= 30 ? " r" : "") + '"><div class="av2">' + (nom ? escH(nom.charAt(0).toUpperCase()) : "🚗") + '</div><div class="mn"><div class="nm">' + escH(nom || c.placa) + '<span class="tag' + (num === 2 ? " t2" : "") + '">Mensaje ' + num + (Number(c.visitas) >= SELLOS_PROMO ? " · 🎁 gratis" : "") + '</span></div><div class="sb">' + escH(c.placa) + ' · <span class="stx">' + starsHtml(c.visitas) + '</span></div><div class="dd">🕐 hace ' + d + ' días</div></div><button type="button" data-p="' + escH(c.placa) + '" data-n="' + num + '" onclick="avisarListado(this.getAttribute(\'data-p\'),Number(this.getAttribute(\'data-n\')))">📲 Avisar</button></div>';
+  }).join("") + (sinCel ? '<div class="hint">' + sinCel + " cliente" + (sinCel > 1 ? "s" : "") + " por avisar sin celular guardado.</div>" : "");
 }
 function avisarListado(placa, num) {
   const c = CLI_DATA.find((x) => String(x.placa).toUpperCase() === String(placa).toUpperCase());
