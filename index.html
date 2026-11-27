@@ -941,6 +941,7 @@ details.card[open] summary{margin-bottom:10px;}
     <label>Piezas por caja (opcional)</label>
     <input id="pmPzas" type="number" inputmode="numeric">
     <button class="primary" onclick="guardarProductoModal()">Guardar</button>
+    <button class="secondary" id="btnBorrarProd" style="display:none;color:var(--red);border-color:#F3C2C2;" onclick="borrarProductoModal()">🗑️ Quitar este producto</button>
   </div>
 </div>
 
@@ -1267,6 +1268,13 @@ function demoProdPost(action, p) {
     demoSave("movprod", mov);
     return { ok: true };
   }
+  if (action === "deleteProducto") {
+    const k = prods.findIndex((x) => x.nombre.toLowerCase() === String(p.producto).toLowerCase());
+    if (k < 0) return { error: "Producto no encontrado" };
+    prods.splice(k, 1);
+    demoSave("productos", prods);
+    return { ok: true };
+  }
   if (action === "ventaProductos") {
     let total = 0;
     const rows = [];
@@ -1323,7 +1331,7 @@ function demoProdPost(action, p) {
     return { ok: true };
   }
 }
-const _DEMO_PROD_GET = ["productos", "movProductos"], _DEMO_PROD_POST = ["updateMovProducto", "deleteMovProducto", "ventaProductos", "compraProducto", "ajusteProducto", "updateProducto", "addProducto"];
+const _DEMO_PROD_GET = ["productos", "movProductos"], _DEMO_PROD_POST = ["updateMovProducto", "deleteMovProducto", "ventaProductos", "compraProducto", "ajusteProducto", "updateProducto", "addProducto", "deleteProducto"];
 function demoGet(action, params) {
   if (_DEMO_PROD_GET.includes(action)) return demoProdGet(action, params);
   if (action === "config") return { config: demoStore("config", {}) };
@@ -3330,7 +3338,29 @@ function abrirProducto(i) {
   document.getElementById("pmCosto").value = Number(p.costo) > 0 ? p.costo : "";
   document.getElementById("pmMinimo").value = p.minimo || 0;
   document.getElementById("pmPzas").value = p.pzasCaja || "";
+  prodBorrarListo = false;
+  const bb = document.getElementById("btnBorrarProd");
+  bb.style.display = i >= 0 ? "block" : "none";
+  bb.textContent = "🗑️ Quitar este producto";
   openModal("modalProducto");
+}
+let prodBorrarListo = false;
+async function borrarProductoModal() {
+  if (prodEditIdx < 0) return;
+  const p = PROD[prodEditIdx], bb = document.getElementById("btnBorrarProd");
+  if (!prodBorrarListo) {
+    prodBorrarListo = true;
+    bb.textContent = "⚠️ Toca otra vez para quitar “" + p.nombre + "”";
+    return;
+  }
+  const r = await apiPost("deleteProducto", { producto: p.nombre });
+  if (r && r.error) {
+    showToast(r.error);
+    return;
+  }
+  closeModal("modalProducto");
+  showToast("Producto quitado ✓");
+  loadProductos();
 }
 async function guardarProductoModal() {
   const nombre = document.getElementById("pmNombre").value.trim();
