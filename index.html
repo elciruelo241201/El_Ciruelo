@@ -333,6 +333,51 @@ details.card[open] summary{margin-bottom:10px;}
 .ok6 .selloMsg{font-weight:800;color:var(--agua-dark);font-size:13px;}
 .ok6 button{width:100%;}
 
+/* ===== Productos mejorado ===== */
+.ptabs{display:flex;gap:6px;overflow-x:auto;margin:0 0 10px;padding:2px 0 4px;}
+.ptabs button{flex:1 0 auto;margin:0;width:auto;border:2px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:12px;padding:8px 12px;font-family:'Nunito',sans-serif;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap;}
+.ptabs button.on{border-color:var(--agua);background:var(--agua-light);color:var(--agua-dark);}
+#view-productos .pt-sec{display:none;}
+#view-productos[data-pt="vender"] .pt-sec[data-pt~="vender"],#view-productos[data-pt="inventario"] .pt-sec[data-pt~="inventario"],#view-productos[data-pt="compras"] .pt-sec[data-pt~="compras"],#view-productos[data-pt="precios"] .pt-sec[data-pt~="precios"],#view-productos[data-pt="movs"] .pt-sec[data-pt~="movs"]{display:block;}
+#view-productos.conbarra{padding-bottom:84px;}
+.ptop{display:flex;gap:6px;overflow-x:auto;margin:6px 0 4px;padding-bottom:2px;}
+.ptop button{flex:0 0 auto;margin:0;width:auto;border:2px solid #FFE3A0;background:#FFF8E5;color:#8A5A00;border-radius:999px;padding:6px 11px;font-family:'Nunito',sans-serif;font-weight:800;font-size:12.5px;cursor:pointer;white-space:nowrap;}
+.ptop button b{color:var(--agua-dark);}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px;}
+.pcard{background:#fff;border:2px solid var(--line);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:3px;}
+.pcard .pn{font-weight:800;font-size:13px;line-height:1.2;min-height:31px;}
+.pcard .pp{font-family:'Baloo 2',sans-serif;font-size:20px;color:var(--agua-dark);line-height:1.1;}
+.pcard .ps{font-size:11px;font-weight:800;color:var(--green);}
+.pcard.baj .ps{color:#9A6A00;background:#FFF1C9;border-radius:8px;padding:2px 7px;align-self:flex-start;}
+.pcard.ago{background:#F3F5F6;}
+.pcard.ago .ps{color:var(--red);background:#FCE9E9;border-radius:8px;padding:2px 7px;align-self:flex-start;}
+.pcard.sel{border-color:var(--agua);background:var(--agua-light);box-shadow:0 3px 8px rgba(14,165,183,.2);}
+.pcard .pc{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:6px;}
+.pcard .pc button{width:42px;height:42px;margin:0;padding:0;border-radius:12px;font-size:22px;font-weight:800;line-height:1;}
+.pcard .pc b{font-family:'Baloo 2',sans-serif;font-size:22px;min-width:20px;text-align:center;}
+.pcard .pw{font-size:11px;font-weight:800;color:#9A6A00;background:#FFF1C9;border-radius:8px;padding:4px 7px;margin-top:4px;line-height:1.25;}
+.pcard.nop{background:#F3F5F6;}
+.pcard.nop .pnp{font-size:11.5px;font-weight:800;color:var(--ink-soft);margin-top:4px;}
+.pcard.nop .pc button{width:100%;font-size:13px;height:38px;}
+.pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 10px;}
+.pstats div{border-radius:14px;padding:8px 4px;text-align:center;background:var(--cream);font-size:11px;font-weight:800;color:var(--ink-soft);line-height:1.2;}
+.pstats b{display:block;font-family:'Baloo 2',sans-serif;font-size:24px;color:var(--ink);line-height:1.1;}
+.pstats .w b{color:#9A6A00;}.pstats .r b{color:var(--red);}
+.psem{padding:9px 0;border-bottom:1px solid var(--line);}
+.psem:last-child{border-bottom:none;}
+.psem .t{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px;font-weight:700;}
+.psem .t em{font-style:normal;font-weight:800;font-size:12px;color:var(--ink-soft);white-space:nowrap;}
+.psem .bar{height:8px;background:#E6F0F2;border-radius:6px;margin-top:6px;overflow:hidden;}
+.psem .bar i{display:block;height:100%;border-radius:6px;background:#1E8E4E;}
+.psem.baj .bar i{background:#E6A800;}.psem.ago .bar i{background:var(--red);}
+.psem.baj .t em{color:#9A6A00;}.psem.ago .t em{color:var(--red);}
+.compcalc{display:none;background:#E9F7EF;border:2px solid #BEE8CF;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:13px;font-weight:700;line-height:1.55;}
+.compcalc b{color:#1E8E4E;}
+.compcalc.mal{background:#FCE9E9;border-color:#F3C2C2;}.compcalc.mal b{color:var(--red);}
+.ok6 .qline{display:flex;justify-content:space-between;gap:8px;text-align:left;padding:3px 0;font-weight:800;font-size:13px;}
+.ok6 .qline small{display:block;font-weight:700;color:var(--ink-soft);font-size:11.5px;}
+.ok6 .qwarn{background:#FFF1C9;color:#8A5A00;border-radius:12px;padding:8px 10px;margin-top:8px;font-size:12.5px;font-weight:800;text-align:left;}
+
 /* ===== Registrar: pasos, íconos de vehículo/tamaño y paquetes ===== */
 .card.paso{border-left:6px solid var(--agua);}
 .card.paso.p2{border-left-color:#6B2D5C;}
@@ -665,29 +710,43 @@ details.card[open] summary{margin-bottom:10px;}
   </div>
 
   <!-- ===================== PRODUCTOS ===================== -->
-  <div class="view" id="view-productos">
-    <div class="card">
-      <h3>🛒 Vender productos</h3>
-      <div class="hint">Aromatizantes y bebidas. Se registran aparte de los servicios de lavado. Toca + para agregar piezas.</div>
-      <div class="chips" id="prodVentaFiltro" style="margin-top:6px;"></div>
-      <div id="prodVenta"><div class="empty">Cargando…</div></div>
-      <label>Forma de pago</label>
-      <div class="chips" id="prodPagoChips">
-        <div class="chip sel" data-v="Efectivo">💵 Efectivo</div>
-        <div class="chip" data-v="Tarjeta">💳 Tarjeta</div>
+  <div class="view" id="view-productos" data-pt="vender">
+    <div class="ptabs" id="prodTabs">
+      <button type="button" data-t="vender" class="on" onclick="setProdTab('vender')">🛒 Vender</button>
+      <button type="button" data-t="inventario" onclick="setProdTab('inventario')">📦 Inventario</button>
+      <button type="button" data-t="compras" class="solo-admin" onclick="setProdTab('compras')">📥 Compras</button>
+      <button type="button" data-t="precios" class="solo-admin" onclick="setProdTab('precios')">💲 Precios</button>
+      <button type="button" data-t="movs" class="solo-admin" onclick="setProdTab('movs')">🧾 Movimientos</button>
+    </div>
+    <div id="prodOk" style="display:none;"></div>
+    <div id="prodVender" class="pt-sec" data-pt="vender">
+      <div class="card">
+        <h3>🛒 Vender productos</h3>
+        <div class="hint">Aromatizantes y bebidas. Se registran aparte de los servicios de lavado. Toca + para agregar piezas.</div>
+        <div id="prodTopBox" style="display:none;"><div class="hint" style="margin:6px 0 0;">⭐ Más vendidos (toca para agregar 1)</div><div class="ptop" id="prodTop"></div></div>
+        <div class="chips" id="prodVentaFiltro" style="margin-top:6px;"></div>
+        <div id="prodVenta"><div class="empty">Cargando…</div></div>
+        <label>Forma de pago</label>
+        <div class="chips" id="prodPagoChips">
+          <div class="chip sel" data-v="Efectivo">💵 Efectivo</div>
+          <div class="chip" data-v="Tarjeta">💳 Tarjeta</div>
+        </div>
       </div>
-      <div class="total-box"><span>Total a cobrar</span><span class="amt" id="prodTotal">$0</span></div>
-      <button class="primary" onclick="guardarVentaProductos()">Guardar venta</button>
+      <div class="card">
+        <h3>🧾 Ventas de productos de hoy</h3>
+        <div id="prodHoy"><div class="empty">Cargando…</div></div>
+      </div>
     </div>
-    <div class="card">
-      <h3>🧾 Ventas de productos de hoy</h3>
-      <div id="prodHoy"><div class="empty">Cargando…</div></div>
-    </div>
-    <div class="card">
+    <div class="card pt-sec" data-pt="inventario">
       <h3>📦 Existencias</h3>
+      <div id="prodResumen"></div>
+      <div class="chips" id="prodExFiltro" style="margin:0 0 6px;">
+        <div class="chip sel" data-v="todos">Todos</div>
+        <div class="chip" data-v="surtir">⚠️ Por surtir</div>
+      </div>
       <div id="prodExistencias"><div class="empty">Cargando…</div></div>
     </div>
-    <div class="card solo-admin">
+    <div class="card solo-admin pt-sec" data-pt="compras">
       <h3>📥 Registrar compra</h3>
       <div class="hint">Sube la existencia. La compra se anota en la caja de ese producto (no se mezcla con los gastos del autolavado).</div>
       <label>Producto</label>
@@ -697,13 +756,14 @@ details.card[open] summary{margin-bottom:10px;}
         <div class="chip sel" data-v="Piezas">Piezas</div>
         <div class="chip" data-v="Cajas">📦 Cajas</div>
       </div>
-      <input id="compCantidad" type="number" inputmode="numeric" placeholder="0">
+      <input id="compCantidad" type="number" inputmode="numeric" placeholder="0" oninput="compraCalc()">
       <div class="hint" id="compHint"></div>
       <label>Costo total pagado (MXN)</label>
-      <input id="compTotal" type="number" inputmode="decimal" placeholder="0">
+      <input id="compTotal" type="number" inputmode="decimal" placeholder="0" oninput="compraCalc()">
+      <div class="compcalc" id="compCalc"></div>
       <button class="secondary" onclick="guardarCompraProducto()">+ Guardar compra</button>
     </div>
-    <div class="card solo-admin">
+    <div class="card solo-admin pt-sec" data-pt="inventario">
       <h3>⚖️ Ajustar inventario</h3>
       <div class="hint">Para el inventario inicial, mermas o conteos. Usa número negativo para restar (ej. -2).</div>
       <label>Producto</label>
@@ -714,14 +774,14 @@ details.card[open] summary{margin-bottom:10px;}
       <select id="ajProdMotivo"><option>Inventario inicial</option><option>Conteo</option><option>Merma / roto</option><option>Regalo / cortesía</option><option>Consumo propio</option><option>Otro</option></select>
       <button class="secondary" onclick="guardarAjusteProducto()">Guardar ajuste</button>
     </div>
-    <div class="card solo-admin">
+    <div class="card solo-admin pt-sec" data-pt="precios">
       <h3>💲 Productos y precios</h3>
       <div class="hint">Toca ✏️ para cambiar precio, costo, mínimo o piezas por caja.</div>
       <div class="chips" id="prodCatFiltro" style="margin-top:6px;"></div>
       <div id="prodCatalogo"></div>
       <button class="secondary" onclick="abrirProducto(-1)">+ Agregar producto</button>
     </div>
-    <div class="card solo-admin">
+    <div class="card solo-admin pt-sec" data-pt="movs">
       <h3>🧾 Movimientos de productos</h3>
       <div class="hint">Ventas, compras y ajustes. Toca ✏️ para corregir o eliminar uno.</div>
       <div class="chips" id="movPeriodoChips">
@@ -816,6 +876,7 @@ details.card[open] summary{margin-bottom:10px;}
 </div>
 
 <div class="barra-reg" id="barraReg"><div class="tot"><small>Total a cobrar</small><b id="barTotal">$0</b></div><button type="button" id="barBtn" onclick="guardarRegistro()">Guardar registro</button></div>
+<div class="barra-reg" id="barraProd"><div class="tot"><small id="bpPiezas">0 piezas</small><b id="bpTotal">$0</b></div><button type="button" onclick="guardarVentaProductos()">Guardar venta</button></div>
 <nav class="tabbar">
   <button data-v="hoy" class="active"><span class="ic">💧</span>Hoy</button>
   <button data-v="registrar"><span class="ic">📝</span>Registrar</button>
@@ -1573,7 +1634,9 @@ function go(view) {
   const navT = document.querySelector("nav.tabbar"), tabA = document.querySelector("nav.tabbar button.active");
   if (navT && tabA) navT.scrollLeft = tabA.offsetLeft - (navT.clientWidth - tabA.offsetWidth) / 2;
   if (view !== "registrar") cerrarConfirmacion();
+  if (view !== "productos") cerrarConfirmProd();
   actualizarBarra();
+  actualizarBarraProd();
   if (view === "registrar") tickRegistrar();
   if (view === "hoy") loadHoy();
   if (view === "clientes") loadClientes();
@@ -1689,6 +1752,8 @@ function applyRole() {
     loadHoy();
   } else if (activeTab === "cortes") {
     loadCortes();
+  } else if (activeTab === "productos") {
+    loadProductos();
   }
 }
 async function renderHoyProductos(today) {
@@ -2915,10 +2980,11 @@ async function loadClientes() {
   renderParaAvisar();
   if (document.getElementById("buscarPlaca").value.trim()) buscarClienteUI();
 }
-let PROD = [], prodQtyMap = {}, prodEditIdx = -1, prodVentaCat = "Bebidas", prodCatCat = "Bebidas";
+let PROD = [], prodQtyMap = {}, prodEditIdx = -1, prodVentaCat = "Bebidas", prodCatCat = "Bebidas", prodTab = "vender", prodTopNames = [], prodGuardando = false;
 const moneyP = (n) => "$" + (Number(n) || 0).toLocaleString("es-MX", { maximumFractionDigits: 2 });
 setupChips("prodPagoChips");
 setupChips("compUnidadChips", () => compraCambio());
+setupChips("prodExFiltro", () => renderProdExistencias());
 function cajasProd() {
   const c = ["Bebidas", "Aromatizantes"];
   PROD.forEach((p) => {
@@ -2938,15 +3004,55 @@ async function loadProductos() {
   const data = await apiGet("productos");
   PROD = data.productos || [];
   prodQtyMap = {};
+  setProdTab(prodTab);
   renderProdVenta();
   renderProdExistencias();
   renderProdCatalogo();
   llenarSelectsProd();
   compraCambio(true);
-  const hoy = isoDate(/* @__PURE__ */ new Date());
-  const mov = (await apiGet("movProductos", { desde: hoy, hasta: hoy })).movimientos || [];
-  renderProdHoy(mov);
+  const hoyD = /* @__PURE__ */ new Date(), hoy = isoDate(hoyD), d30 = new Date(hoyD);
+  d30.setDate(d30.getDate() - 29);
+  const mov30 = (await apiGet("movProductos", { desde: isoDate(d30), hasta: hoy })).movimientos || [];
+  renderProdHoy(mov30.filter((m) => isoDate(new Date(m.fecha)) === hoy));
+  calcProdTop(mov30);
+  renderProdVenta();
   if (typeof ROLE !== "undefined" && ROLE === "admin") loadMovAdmin();
+}
+function prodEstado(p) {
+  const ex = Number(p.existencia) || 0, mn = Number(p.minimo) || 0;
+  if (ex <= 0) return "ago";
+  if (mn > 0 && ex <= mn) return "baj";
+  return "ok";
+}
+function setProdTab(t) {
+  const emp = typeof ROLE !== "undefined" && ROLE === "empleado";
+  if (!t || emp && t !== "vender" && t !== "inventario") t = "vender";
+  prodTab = t;
+  const v = document.getElementById("view-productos");
+  v.setAttribute("data-pt", t);
+  document.querySelectorAll("#prodTabs button").forEach((b) => b.classList.toggle("on", b.dataset.t === t));
+  actualizarBarraProd();
+}
+function calcProdTop(mov) {
+  const c = {};
+  mov.filter((m) => m.tipo === "Venta").forEach((m) => {
+    c[m.producto] = (c[m.producto] || 0) + (Number(m.cantidad) || 0);
+  });
+  prodTopNames = Object.keys(c).filter((n) => {
+    const p = PROD.find((x) => x.nombre === n);
+    return p && Number(p.precio) > 0;
+  }).sort((a, b) => c[b] - c[a]).slice(0, 4);
+}
+function renderProdTop() {
+  const box = document.getElementById("prodTopBox"), el = document.getElementById("prodTop");
+  if (!box || !el) return;
+  box.style.display = prodTopNames.length ? "block" : "none";
+  el.innerHTML = prodTopNames.map((n) => {
+    const i = PROD.findIndex((x) => x.nombre === n);
+    if (i < 0) return "";
+    const q = prodQtyMap[i] || 0;
+    return '<button type="button" onclick="prodQty('.concat(i, ',1)">').concat(escH(n.replace(/\s*\(.*$/, "")), " · ").concat(moneyP(PROD[i].precio)).concat(q ? " <b>×" + q + "</b>" : "", "</button>");
+  }).join("");
 }
 function renderProdVenta() {
   const box = document.getElementById("prodVenta");
@@ -2954,16 +3060,26 @@ function renderProdVenta() {
     prodVentaCat = c;
     renderProdVenta();
   });
+  renderProdTop();
   if (!PROD.length) {
     box.innerHTML = '<div class="empty">Sin productos. Ejecuta activarProductos en Apps Script.</div>';
+    actualizarTotalProd();
     return;
   }
+  const esEmp = typeof ROLE !== "undefined" && ROLE === "empleado";
   const filas = PROD.map((p, i) => ({ p, i })).filter((x) => (x.p.categoria || "Otro") === prodVentaCat);
-  box.innerHTML = filas.length ? filas.map(({ p, i }) => {
+  box.innerHTML = filas.length ? '<div class="pgrid">' + filas.map(({ p, i }) => {
     const sinPrecio = !(Number(p.precio) > 0);
-    const q = prodQtyMap[i] || 0;
-    return '<div class="list-row">\n      <span>'.concat(escH(p.nombre), '<br><span style="color:var(--ink-soft);font-weight:700;">').concat(sinPrecio ? "Sin precio" : moneyP(p.precio), '</span></span>\n      <span style="display:flex;align-items:center;gap:10px;">\n        <button class="secondary" style="width:38px;margin:0;padding:6px 0;" ').concat(sinPrecio ? "disabled" : "", ' onclick="prodQty(').concat(i, ',-1)">−</button>\n        <b style="min-width:18px;text-align:center;">').concat(q, '</b>\n        <button class="secondary" style="width:38px;margin:0;padding:6px 0;" ').concat(sinPrecio ? "disabled" : "", ' onclick="prodQty(').concat(i, ',1)">+</button>\n      </span></div>');
-  }).join("") : '<div class="empty">No hay productos en esta caja</div>';
+    const q = prodQtyMap[i] || 0, ex = Number(p.existencia) || 0, est = prodEstado(p);
+    if (sinPrecio) {
+      return '<div class="pcard nop"><div class="pn">'.concat(escH(p.nombre), '</div><div class="pnp">Falta precio</div><div class="pc">').concat(esEmp ? '<span class="pw" style="margin:0;">Avisa al Administrador</span>' : '<button class="secondary" type="button" onclick="abrirProducto('.concat(i, ')">Poner precio</button>'), "</div></div>");
+    }
+    const estTxt = est === "ago" ? "Agotado" : est === "baj" ? "Quedan " + ex + " · pocas" : "Quedan " + ex;
+    let warn = "";
+    if (q > 0 && ex <= 0) warn = "⚠️ Sin existencia registrada. Se puede vender; avisa al Administrador.";
+    else if (q > 0 && q > ex) warn = "⚠️ Solo hay " + ex + " en inventario.";
+    return '<div class="pcard '.concat(est, q > 0 ? " sel" : "", '"><div class="pn">').concat(escH(p.nombre), '</div><div class="pp">').concat(moneyP(p.precio), '</div><div class="ps">').concat(estTxt, '</div><div class="pc"><button class="secondary" type="button" onclick="prodQty(').concat(i, ',-1)">−</button><b>').concat(q, '</b><button class="secondary" type="button" onclick="prodQty(').concat(i, ',1)">+</button></div>').concat(warn ? '<div class="pw">' + warn + "</div>" : "", "</div>");
+  }).join("") + "</div>" : '<div class="empty">No hay productos en esta caja</div>';
   actualizarTotalProd();
 }
 function prodQty(i, d) {
@@ -2972,21 +3088,77 @@ function prodQty(i, d) {
 }
 function actualizarTotalProd() {
   const t = PROD.reduce((a, p, i) => a + (prodQtyMap[i] || 0) * (Number(p.precio) || 0), 0);
-  document.getElementById("prodTotal").textContent = moneyP(t);
+  actualizarBarraProd();
   return t;
 }
+function actualizarBarraProd() {
+  const bar = document.getElementById("barraProd");
+  if (!bar) return;
+  let pzas = 0, tot = 0;
+  PROD.forEach((p, i) => {
+    const q = prodQtyMap[i] || 0;
+    pzas += q;
+    tot += q * (Number(p.precio) || 0);
+  });
+  const ok = document.getElementById("prodOk");
+  const activo = document.getElementById("view-productos").classList.contains("active") && prodTab === "vender" && (!ok || ok.style.display === "none") && pzas > 0;
+  bar.style.display = activo ? "flex" : "none";
+  document.getElementById("view-productos").classList.toggle("conbarra", activo);
+  const nav = document.querySelector("nav.tabbar");
+  bar.style.bottom = (nav ? nav.offsetHeight : 64) + "px";
+  document.getElementById("bpPiezas").textContent = pzas + (pzas === 1 ? " pieza" : " piezas");
+  document.getElementById("bpTotal").textContent = moneyP(tot);
+}
+window.addEventListener("resize", actualizarBarraProd);
+function cerrarConfirmProd() {
+  const ok = document.getElementById("prodOk");
+  if (!ok || ok.style.display === "none") return;
+  ok.style.display = "none";
+  ok.innerHTML = "";
+  document.getElementById("prodVender").style.display = "";
+  actualizarBarraProd();
+}
+function mostrarConfirmProd(sel, total, pago) {
+  const ok = document.getElementById("prodOk");
+  const pzas = sel.reduce((a, x) => a + x.q, 0);
+  let sinEx = [];
+  const lineas = sel.map((x) => {
+    const ex = Number(x.p.existencia) || 0, queda = ex - x.q;
+    if (queda < 0) sinEx.push(x.p.nombre);
+    return '<div class="qline"><span>'.concat(x.q, " × ").concat(escH(x.p.nombre), "<small>").concat(queda >= 0 ? "Quedan " + queda + " en inventario" : "⚠️ Sin existencia registrada", "</small></span><span>").concat(moneyP(x.q * (Number(x.p.precio) || 0)), "</span></div>");
+  }).join("");
+  const aviso = sinEx.length ? '<div class="qwarn">⚠️ Se vendió sin existencia registrada: ' + sinEx.map(escH).join(", ") + ". Avisa al Administrador para ajustar el inventario.</div>" : "";
+  ok.innerHTML = '<div class="ok6"><div class="ck">✓</div><h2>¡Venta registrada!</h2><p>' + pzas + (pzas === 1 ? " pieza" : " piezas") + " · " + (pago === "Tarjeta" ? "💳 Tarjeta" : "💵 Efectivo") + '</p><div class="res">' + lineas + '<div class="qline" style="border-top:1px solid var(--line);margin-top:6px;padding-top:6px;"><span>Total</span><span style="color:#1E8E4E">' + moneyP(total) + "</span></div></div>" + aviso + '<div style="height:14px"></div><button class="primary" onclick="cerrarConfirmProd();window.scrollTo(0,0);">➕ Vender otro</button><button class="secondary" onclick="cerrarConfirmProd();go(\'hoy\');">📊 Ver Hoy</button></div>';
+  document.getElementById("prodVender").style.display = "none";
+  ok.style.display = "block";
+  actualizarBarraProd();
+  window.scrollTo(0, 0);
+}
 async function guardarVentaProductos() {
-  const items = PROD.map((p, i) => ({ producto: p.nombre, cantidad: prodQtyMap[i] || 0 })).filter((x) => x.cantidad > 0);
-  if (!items.length) {
+  if (prodGuardando) return;
+  const sel = [];
+  PROD.forEach((p, i) => {
+    const q = prodQtyMap[i] || 0;
+    if (q > 0) sel.push({ p, q });
+  });
+  if (!sel.length) {
     showToast("Agrega al menos un producto");
     return;
   }
-  const r = await apiPost("ventaProductos", { items, formaPago: chipVal("prodPagoChips"), registradoPor: typeof ROLE !== "undefined" && ROLE === "empleado" ? "Usuario" : "Admin" });
+  const items = sel.map((x) => ({ producto: x.p.nombre, cantidad: x.q }));
+  const pago = chipVal("prodPagoChips");
+  prodGuardando = true;
+  let r;
+  try {
+    r = await apiPost("ventaProductos", { items, formaPago: pago, registradoPor: typeof ROLE !== "undefined" && ROLE === "empleado" ? "Usuario" : "Admin" });
+  } finally {
+    prodGuardando = false;
+  }
   if (r && r.error) {
     showToast(r.error);
     return;
   }
-  showToast("Venta guardada ✓ " + moneyP(r.total));
+  mostrarConfirmProd(sel, r.total, pago);
   loadProductos();
 }
 const catDe = (m) => m.categoria || (PROD.find((p) => p.nombre === m.producto) || {}).categoria || "Otro";
@@ -3013,15 +3185,26 @@ function renderProdHoy(mov) {
 }
 function renderProdExistencias() {
   const box = document.getElementById("prodExistencias");
+  const res = document.getElementById("prodResumen");
   if (!PROD.length) {
+    if (res) res.innerHTML = "";
     box.innerHTML = '<div class="empty">Sin productos</div>';
     return;
   }
-  const g = porCaja(PROD, (p) => p.categoria || "Otro");
+  const nAgo = PROD.filter((p) => prodEstado(p) === "ago").length, nBaj = PROD.filter((p) => prodEstado(p) === "baj").length;
+  if (res) res.innerHTML = '<div class="pstats"><div><b>' + PROD.length + '</b>productos</div><div class="w"><b>' + nBaj + '</b>por surtir</div><div class="r"><b>' + nAgo + "</b>agotados</div></div>";
+  const soloSurtir = chipVal("prodExFiltro") === "surtir";
+  const lista = PROD.filter((p) => !soloSurtir || prodEstado(p) !== "ok");
+  if (!lista.length) {
+    box.innerHTML = '<div class="empty">Todo bien: no hay productos por surtir 👌</div>';
+    return;
+  }
+  const g = porCaja(lista, (p) => p.categoria || "Otro");
   box.innerHTML = Object.keys(g).map((c) => '<div class="cat-group">'.concat(escH(c), "</div>") + g[c].map((p) => {
-    const ex = Number(p.existencia) || 0;
-    const bajo = ex < 0 || Number(p.minimo) > 0 && ex <= Number(p.minimo);
-    return '<div class="list-row"><span>'.concat(escH(p.nombre), '</span><span class="').concat(bajo ? "badge-warn" : "", '" style="font-weight:800;">').concat(ex, " pzas").concat(bajo ? " ⚠️" : "", "</span></div>");
+    const ex = Number(p.existencia) || 0, mn = Number(p.minimo) || 0, est = prodEstado(p);
+    const tope = Math.max(mn * 3, ex, 1), pct = Math.max(ex > 0 ? 6 : 0, Math.min(100, Math.round(Math.max(ex, 0) / tope * 100)));
+    const txt = est === "ago" ? "Agotado" : ex + " pzas" + (mn > 0 ? " · mín " + mn : "");
+    return '<div class="psem '.concat(est, '"><div class="t"><span>').concat(escH(p.nombre), "</span><em>").concat(txt).concat(est === "baj" ? " ⚠️" : "", '</em></div><div class="bar"><i style="width:').concat(pct, '%"></i></div></div>');
   }).join("")).join("");
 }
 function renderProdCatalogo() {
@@ -3055,6 +3238,32 @@ function compraCambio(reset) {
   } else if (cajas) {
     h.textContent = "1 caja = ".concat(p.pzasCaja, " piezas.");
   } else h.textContent = "";
+  compraCalc();
+}
+function compraCalc() {
+  const box = document.getElementById("compCalc");
+  if (!box) return;
+  const p = PROD[document.getElementById("compProducto").value];
+  const n = Number(document.getElementById("compCantidad").value);
+  const totEl = document.getElementById("compTotal");
+  const total = Number(totEl.value);
+  const cajas = chipVal("compUnidadChips") === "Cajas";
+  if (!p || !(n > 0) || totEl.value === "" || cajas && !(p.pzasCaja > 0)) {
+    box.style.display = "none";
+    return;
+  }
+  const pzas = cajas ? n * p.pzasCaja : n, unit = total / pzas, ex = Number(p.existencia) || 0;
+  let h = (cajas ? n + " caja" + (n > 1 ? "s" : "") + " × " + p.pzasCaja + " pzas = <b>" + pzas + " piezas</b><br>" : "<b>" + pzas + " piezas</b><br>") + "Costo por pieza: <b>" + moneyP(unit) + "</b>";
+  let mal = false;
+  if (Number(p.precio) > 0) {
+    const gan = p.precio - unit, mg = Math.round(gan / p.precio * 100);
+    mal = gan <= 0;
+    h += "<br>Precio de venta: <b>" + moneyP(p.precio) + "</b><br>" + (mal ? "⚠️ Con este costo no ganas nada por pieza" : "Ganas <b>" + moneyP(gan) + "</b> por pieza (" + mg + "%)");
+  } else h += "<br>Este producto aún no tiene precio de venta.";
+  h += "<br>Existencia: " + ex + " → <b>" + (ex + pzas) + "</b>";
+  box.className = "compcalc" + (mal ? " mal" : "");
+  box.innerHTML = h;
+  box.style.display = "block";
 }
 async function guardarCompraProducto() {
   const p = PROD[document.getElementById("compProducto").value];
@@ -3085,6 +3294,7 @@ async function guardarCompraProducto() {
   }
   document.getElementById("compCantidad").value = "";
   document.getElementById("compTotal").value = "";
+  document.getElementById("compCalc").style.display = "none";
   showToast("Compra guardada ✓");
   loadProductos();
 }
