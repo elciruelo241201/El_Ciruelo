@@ -168,6 +168,21 @@ button.secondary{
 .cat-row:last-child{border-bottom:none;}
 .cat-row .nm{flex:1; font-weight:700; font-size:13px;}
 .cat-row input{width:84px; text-align:right; padding:7px 8px; font-size:13.5px;}
+.cat-row .quit{width:auto;min-width:34px;height:34px;border-radius:9px;border:2px solid var(--line);background:#fff;font-size:14px;cursor:pointer;flex:0 0 auto;padding:0 6px;font-weight:800;color:var(--ink-soft);}
+.cat-row .quit.arm{background:#FCE9E9;border-color:#F3C2C2;color:var(--red);font-size:12px;}
+.sv{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px;position:relative;overflow:hidden;cursor:pointer;}
+.sv:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--agua);}
+.sv.moto:before{background:#FFC53D;}.sv.camioneta:before{background:#6B2D5C;}.sv.extra:before{background:#1E8E4E;}.sv.bici:before{background:#38BDF8;}
+.sv .ic{font-size:24px;margin-left:4px;}
+.sv .t{flex:1;min-width:0;}.sv .t b{display:block;font-size:13.5px;line-height:1.15;color:var(--ink);}.sv .t small{font-size:11px;color:var(--ink-soft);font-weight:700;}
+.sv .pr{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:20px;color:#1E8E4E;}
+.sv .ed{width:32px;height:32px;border-radius:10px;background:var(--agua-light);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.svbig{display:flex;align-items:center;justify-content:center;gap:14px;margin:14px 0 8px;}
+.svbig .svstep{width:54px;height:54px;border-radius:50%;margin:0;padding:0;border:0;background:var(--agua-light);color:var(--agua-dark);font-size:28px;font-weight:800;cursor:pointer;}
+.svbig div{display:flex;align-items:center;font-family:'Baloo 2',sans-serif;font-size:40px;font-weight:800;color:var(--ink);}
+.svbig input{width:120px;border:0;border-bottom:3px solid var(--agua);background:transparent;font-family:'Baloo 2',sans-serif;font-size:40px;font-weight:800;color:var(--ink);text-align:center;padding:0;border-radius:0;}
+.svquick{display:flex;gap:8px;justify-content:center;margin-bottom:14px;}
+.svquick span{background:var(--cream);border:2px solid var(--line);border-radius:99px;padding:5px 13px;font-weight:800;font-size:13px;color:var(--ink-soft);cursor:pointer;}
 .cat-row .save{width:34px;height:34px;border-radius:9px;border:none;background:var(--agua);color:#fff;font-weight:800;cursor:pointer;flex:0 0 auto;}
 .cat-group{font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; color:var(--ink-soft); margin:14px 0 2px;}
 .cat-group:first-child{margin-top:0;}
@@ -796,9 +811,11 @@ details.card[open] summary{margin-bottom:10px;}
   <!-- ===================== CATALOGO ===================== -->
   <div class="view" id="view-catalogo">
     <div class="card">
-      <h3>💲 Tarifas 2026</h3>
-      <div class="hint">Toca el precio, cámbialo y presiona ✓ para guardarlo. Se actualiza directo en tu Google Sheet.</div>
+      <h3>🧽 Servicios y precios</h3>
+      <div class="hint">Toca un servicio para cambiar su precio o quitarlo. Lo que cambies aquí es lo que aparece al registrar un servicio.</div>
+      <div class="chips" id="svFiltro" style="margin-top:8px;"></div>
       <div id="catalogoLista"><div class="empty">Cargando…</div></div>
+      <button class="primary" id="btnAddServ" onclick="abrirServicioNuevo()" style="display:none;">＋ Agregar servicio</button>
     </div>
   </div>
 
@@ -882,7 +899,7 @@ details.card[open] summary{margin-bottom:10px;}
   <button data-v="registrar"><span class="ic">📝</span>Registrar</button>
   <button data-v="clientes"><span class="ic">🧾</span>Clientes</button>
   <button data-v="productos"><span class="ic">🛒</span>Productos</button>
-  <button data-v="catalogo"><span class="ic">💲</span>Tarifas</button>
+  <button data-v="catalogo"><span class="ic">🧽</span>Servicios</button>
   <button data-v="asistencia"><span class="ic">👷</span>Personal</button>
   <button data-v="cortes"><span class="ic">📅</span>Cortes</button>
   <button data-v="rentabilidad"><span class="ic">💹</span>Rentabilidad</button>
@@ -920,6 +937,31 @@ details.card[open] summary{margin-bottom:10px;}
       (mínimo 4 dígitos), ese PIN quedará guardado en este celular/tablet para poder entrar después a modo
       Administrador (todas las pestañas). Guárdalo bien — solo el dueño debe saberlo.
     </div>
+  </div>
+</div>
+
+<!-- Modal servicio -->
+<div class="modal-bg" id="modalServicio">
+  <div class="modal">
+    <button class="close" onclick="closeModal('modalServicio')">×</button>
+    <h3 id="svTitulo">Servicio</h3>
+    <div class="hint" id="svSub" style="margin-top:0;"></div>
+    <div class="svbig"><button type="button" class="svstep" onclick="svAjustar(-5)">−</button><div><span>$</span><input id="svPrecio" type="number" inputmode="decimal"></div><button type="button" class="svstep" onclick="svAjustar(5)">+</button></div>
+    <div class="svquick"><span onclick="svAjustar(-10)">−$10</span><span onclick="svAjustar(-5)">−$5</span><span onclick="svAjustar(5)">+$5</span><span onclick="svAjustar(10)">+$10</span></div>
+    <button class="primary" onclick="guardarServicio()">Guardar precio</button>
+    <button class="secondary" id="btnQuitarServ" style="color:var(--red);border-color:#F3C2C2;" onclick="quitarServicioModal()">🗑️ Quitar este servicio</button>
+  </div>
+</div>
+<div class="modal-bg" id="modalServicioNuevo">
+  <div class="modal">
+    <button class="close" onclick="closeModal('modalServicioNuevo')">×</button>
+    <h3>＋ Agregar servicio</h3>
+    <div class="hint" style="margin-top:0;">Servicio particular (ej. limpieza de interiores). Aparecerá en Registrar como extra.</div>
+    <label>Nombre del servicio</label>
+    <input id="svnNombre" type="text" placeholder="Ej. Limpieza de interiores">
+    <label>Precio (MXN)</label>
+    <input id="svnPrecio" type="number" inputmode="decimal" placeholder="0">
+    <button class="primary" onclick="guardarServicioNuevo()">Guardar servicio</button>
   </div>
 </div>
 
@@ -1593,6 +1635,23 @@ function demoPost(action, payload) {
   }
   if (action === "uploadFoto") {
     return { url: payload.dataUrl || "" };
+  }
+  if (action === "addServicio") {
+    const cat = demoStore("catalogo", DEMO.catalogo);
+    const n = String(payload.servicio || "").trim();
+    if (cat.otros.some((r) => r.servicio.toLowerCase() === n.toLowerCase())) return { error: "Ya existe un servicio con ese nombre" };
+    cat.otros.push({ servicio: n, precio: Number(payload.precio) });
+    demoSave("catalogo", cat);
+    return { ok: true };
+  }
+  if (action === "quitarServicio") {
+    const cat = demoStore("catalogo", DEMO.catalogo);
+    if (payload.tipo === "tabla1" || payload.tipo === "ceras") {
+      const row = (payload.tipo === "tabla1" ? cat.tabla1 : cat.ceras).find((r) => r.categoria === payload.categoria && r.tamano === payload.tamano);
+      if (row) row[payload.paquete] = "—";
+    } else cat.otros = cat.otros.filter((r) => r.servicio !== payload.servicio);
+    demoSave("catalogo", cat);
+    return { ok: true };
   }
   if (action === "updatePrecio") {
     const cat = demoStore("catalogo", DEMO.catalogo);
@@ -3384,52 +3443,137 @@ async function guardarProductoModal() {
   showToast("Producto guardado ✓");
   loadProductos();
 }
+let svTab = "Lavado", svList = [], svEdit = null, svBorrarListo = false;
+const SV_ICO = { Moto: "🏍️", Coche: "🚗", Camioneta: "🛻", Bici: "🚲" };
+function svIcoExtra(n) {
+  const t = String(n).toLowerCase();
+  if (/interior|asiento|tapiz|aspir/.test(t)) return "🪑";
+  if (/llanta|rin/.test(t)) return "🛞";
+  if (/aceite/.test(t)) return "🛢️";
+  if (/cadena/.test(t)) return "⛓️";
+  if (/motor/.test(t)) return "⚙️";
+  if (/vidrio|cristal|ventana/.test(t)) return "🪟";
+  return "➕";
+}
 async function loadCatalogo() {
   catalogoCache = await apiGet("catalogo");
+  renderServicios();
+}
+function renderServicios() {
+  const cat = catalogoCache || { tabla1: [], ceras: [], otros: [] };
+  const f = document.getElementById("svFiltro");
+  f.innerHTML = [["Lavado", "🧽 Lavado"], ["Cera", "✨ Cera"], ["Extras", "➕ Extras"]].map((x) => '<div class="chip '.concat(x[0] === svTab ? "sel" : "", '" data-t="').concat(x[0], '">').concat(x[1], "</div>")).join("");
+  f.querySelectorAll(".chip").forEach((el) => el.addEventListener("click", () => {
+    svTab = el.dataset.t;
+    renderServicios();
+  }));
+  document.getElementById("btnAddServ").style.display = svTab === "Extras" ? "block" : "none";
+  svList = [];
+  const orden = ["Moto", "Coche", "Camioneta", "Bici"];
+  if (svTab === "Lavado") {
+    orden.forEach((c) => (cat.tabla1 || []).filter((r) => r.categoria === c).forEach((r) => [["express", "Lavado Express"], ["basico", "Paq.#1 Básico"]].forEach((p) => {
+      if (r[p[0]] === "—" || r[p[0]] === undefined) return;
+      svList.push({ grupo: c, ico: SV_ICO[c] || "🚗", titulo: r.tamano === c ? c : c + " · " + r.tamano, sub: p[1], precio: Number(r[p[0]]), cls: c.toLowerCase(), key: { tipo: "tabla1", categoria: c, tamano: r.tamano, paquete: p[0] } });
+    })));
+  } else if (svTab === "Cera") {
+    orden.forEach((c) => (cat.ceras || []).filter((r) => r.categoria === c).forEach((r) => [["ceraLiquida", "Cera líquida"], ["ceraCrema", "Cera en crema"]].forEach((p) => {
+      if (r[p[0]] === "—" || r[p[0]] === undefined) return;
+      svList.push({ grupo: c, ico: SV_ICO[c] || "🚗", titulo: r.tamano === c ? c : c + " · " + r.tamano, sub: p[1], precio: Number(r[p[0]]), cls: c.toLowerCase(), key: { tipo: "ceras", categoria: c, tamano: r.tamano, paquete: p[0] } });
+    })));
+  } else {
+    (cat.otros || []).forEach((o) => svList.push({ grupo: "", ico: svIcoExtra(o.servicio), titulo: o.servicio, sub: "Extra", precio: Number(o.precio), cls: "extra", key: { tipo: "tabla2", servicio: o.servicio } }));
+  }
   const box = document.getElementById("catalogoLista");
-  let html = "";
-  ["Moto", "Coche", "Camioneta"].forEach((cat) => {
-    const rows = catalogoCache.tabla1.filter((r) => r.categoria === cat);
-    if (!rows.length) return;
-    html += '<div class="cat-group">'.concat(cat, " · lavado</div>");
-    rows.forEach((r) => {
-      [["express", "Express"], ["basico", "Básico"]].forEach(([k, label]) => {
-        if (r[k] === "—") return;
-        html += catRowHtml("".concat(r.tamano, " · ").concat(label), r[k], JSON.stringify({ tipo: "tabla1", categoria: cat, tamano: r.tamano, paquete: k }));
-      });
-    });
-  });
-  html += '<div class="cat-group">Cera (extra, por tamaño)</div>';
-  ["Coche", "Camioneta"].forEach((cat) => {
-    const rows = (catalogoCache.ceras || []).filter((r) => r.categoria === cat);
-    rows.forEach((r) => {
-      [["ceraLiquida", "Líquida"], ["ceraCrema", "En crema"]].forEach(([k, label]) => {
-        if (r[k] === "—") return;
-        html += catRowHtml("".concat(cat, " ").concat(r.tamano, " · Cera ").concat(label), r[k], JSON.stringify({ tipo: "ceras", categoria: cat, tamano: r.tamano, paquete: k }));
-      });
-    });
-  });
-  html += '<div class="cat-group">Otros servicios y extras</div>';
-  catalogoCache.otros.forEach((o) => {
-    html += catRowHtml(o.servicio, o.precio, JSON.stringify({ tipo: "tabla2", servicio: o.servicio }));
+  if (!svList.length) {
+    box.innerHTML = '<div class="empty">' + (svTab === "Extras" ? "Aún no hay servicios extras. Toca “Agregar servicio”." : "No hay servicios en esta lista") + "</div>";
+    return;
+  }
+  let html = "", g = null;
+  svList.forEach((x, i) => {
+    if (x.grupo !== g) {
+      g = x.grupo;
+      if (g) html += '<div class="cat-group">' + escH(g) + "</div>";
+    }
+    html += '<div class="sv '.concat(x.cls, '" onclick="abrirServicio(').concat(i, ')"><span class="ic">').concat(x.ico, '</span><div class="t"><b>').concat(escH(x.titulo), "</b><small>").concat(escH(x.sub), '</small></div><span class="pr">').concat(moneyP(x.precio), '</span><span class="ed">✏️</span></div>');
   });
   box.innerHTML = html;
 }
-function catRowHtml(label, precio, keyJson) {
-  const id = "p_" + Math.random().toString(36).slice(2, 9);
-  return '<div class="cat-row">\n    <span class="nm">'.concat(label, '</span>\n    <input id="').concat(id, '" type="number" value="').concat(precio, '">\n    <button class="save" data-key=\'').concat(keyJson, "' data-id=\"").concat(id, '" onclick="guardarPrecio(this)">✓</button>\n  </div>');
+function abrirServicio(i) {
+  const x = svList[i];
+  if (!x) return;
+  svEdit = x;
+  svBorrarListo = false;
+  document.getElementById("svTitulo").textContent = x.titulo;
+  document.getElementById("svSub").textContent = x.sub + " · Precio actual " + moneyP(x.precio);
+  document.getElementById("svPrecio").value = x.precio;
+  document.getElementById("btnQuitarServ").textContent = "🗑️ Quitar este servicio";
+  openModal("modalServicio");
 }
-async function guardarPrecio(btn) {
-  const key = JSON.parse(btn.dataset.key);
-  const valor = document.getElementById(btn.dataset.id).value;
-  const payload = key.tipo === "tabla2" ? { tipo: "tabla2", servicio: key.servicio, valor } : { tipo: key.tipo, categoria: key.categoria, tamano: key.tamano, paquete: key.paquete, valor };
+function svAjustar(d) {
+  const el = document.getElementById("svPrecio");
+  el.value = Math.max(0, (Number(el.value) || 0) + d);
+}
+async function guardarServicio() {
+  const x = svEdit, v = document.getElementById("svPrecio").value;
+  if (!x) return;
+  if (v === "" || !(Number(v) >= 0)) {
+    showToast("Escribe el precio");
+    return;
+  }
+  const k = x.key;
+  const payload = k.tipo === "tabla2" ? { tipo: "tabla2", servicio: k.servicio, valor: v } : { tipo: k.tipo, categoria: k.categoria, tamano: k.tamano, paquete: k.paquete, valor: v };
   const r = await apiPost("updatePrecio", payload);
-  if (r.error) {
+  if (r && r.error) {
     showToast("Error: " + r.error);
     return;
   }
+  closeModal("modalServicio");
   showToast("Precio actualizado ✓");
   catalogoCache = null;
+  loadCatalogo();
+}
+async function quitarServicioModal() {
+  const x = svEdit, bb = document.getElementById("btnQuitarServ");
+  if (!x) return;
+  if (!svBorrarListo) {
+    svBorrarListo = true;
+    bb.textContent = "⚠️ Toca otra vez para quitar “" + x.titulo + "”";
+    return;
+  }
+  const r = await apiPost("quitarServicio", x.key);
+  if (r && r.error) {
+    showToast("Error: " + r.error);
+    return;
+  }
+  closeModal("modalServicio");
+  showToast("Servicio quitado ✓");
+  catalogoCache = null;
+  loadCatalogo();
+}
+function abrirServicioNuevo() {
+  document.getElementById("svnNombre").value = "";
+  document.getElementById("svnPrecio").value = "";
+  openModal("modalServicioNuevo");
+}
+async function guardarServicioNuevo() {
+  const nombre = document.getElementById("svnNombre").value.trim(), precio = document.getElementById("svnPrecio").value;
+  if (!nombre) {
+    showToast("Escribe el nombre");
+    return;
+  }
+  if (precio === "" || !(Number(precio) >= 0)) {
+    showToast("Escribe el precio");
+    return;
+  }
+  const r = await apiPost("addServicio", { servicio: nombre, precio: Number(precio) });
+  if (r && r.error) {
+    showToast(r.error);
+    return;
+  }
+  closeModal("modalServicioNuevo");
+  showToast("Servicio agregado ✓");
+  catalogoCache = null;
+  loadCatalogo();
 }
 async function loadAsistencia() {
   const today = isoDate(/* @__PURE__ */ new Date());
